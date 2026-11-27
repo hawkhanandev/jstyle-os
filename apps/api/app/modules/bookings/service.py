@@ -12,6 +12,7 @@ from app.core.db import utcnow
 from app.modules.bookings.models import Booking, BookingStatus
 from app.modules.enquiries.models import Enquiry, Pipeline
 from app.modules.enquiries.pipeline import transition
+from app.modules.platform import outbox
 from app.modules.platform.audit import Actor, write_audit
 from app.modules.quotes import service as quotes
 from app.modules.quotes.models import Quote, QuoteStatus
@@ -105,6 +106,14 @@ def try_book(db: Session, b: Booking, e: Enquiry, actor: Actor) -> list[str]:
     b.status = BookingStatus.BOOKED
     b.booked_at = utcnow()
     write_audit(db, actor, "booking.booked", entity_type="booking", entity_id=b.id)
+    outbox.enqueue(
+        db,
+        "email.send",
+        f"booking_confirmed:{b.id}",
+        {"enquiry_id": str(e.id), "template": "booking_confirmed"},
+        aggregate_type="booking",
+        aggregate_id=b.id,
+    )
     return []
 
 
