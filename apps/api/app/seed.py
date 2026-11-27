@@ -10,7 +10,9 @@ from typing import Any
 from sqlalchemy.dialects.postgresql import insert
 
 from app.core.db import get_sessionmaker
+from app.modules.platform.audit import SYSTEM
 from app.modules.platform.models import SystemSetting
+from app.modules.pricing.service import ensure_defaults
 
 DEFAULT_SETTINGS: dict[str, Any] = {
     "business": {
@@ -36,8 +38,9 @@ def run() -> None:
                 .values(key=key, value=value)
                 .on_conflict_do_nothing(index_elements=["key"])
             )
+        cards = ensure_defaults(db, SYSTEM)
         db.commit()
-    print(f"seed: {len(DEFAULT_SETTINGS)} settings ensured")
+    print(f"seed: {len(DEFAULT_SETTINGS)} settings ensured, {cards} rate cards created")
 
 
 if __name__ == "__main__":

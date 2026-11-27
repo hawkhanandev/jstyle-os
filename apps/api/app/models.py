@@ -2,5 +2,6 @@
 
 from app.modules.auth.models import User, UserSession
 from app.modules.platform.models import AuditLog, OutboxEvent, SystemSetting
+from app.modules.pricing.models import RateCardRow
 
-__all__ = ["AuditLog", "OutboxEvent", "SystemSetting", "User", "UserSession"]
+__all__ = ["AuditLog", "OutboxEvent", "RateCardRow", "SystemSetting", "User", "UserSession"]
