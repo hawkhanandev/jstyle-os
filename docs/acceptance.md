@@ -5,9 +5,12 @@
 | Hawaii and Oregon pricing formulas pass automated tests | `test_prd_hawaii_worked_example`, `test_prd_oregon_worked_example` | Done |
 | Oregon minimum booking adjustment is displayed correctly | `test_oregon_minimum_adds_separate_line` | Done |
 | Travel exceptions require staff confirmation | `test_hawaii_outside_without_stylist_count_is_blocked`, `test_unknown_travel_zone_is_flagged` | Done |
-| Rate changes do not alter existing quotes | `test_snapshot_is_independent_of_later_rate_changes` (engine level; DB level in 2.2) | Partial |
+| Rate changes do not alter existing quotes | `test_snapshot_is_independent_of_later_rate_changes`, `test_rate_change_does_not_touch_existing_quote` | Done |
 | Hawaii overlapping weddings are supported / Oregon has no cap | No capacity check exists by design | Done |
 | Both website forms create enquiries correctly | `test_clean_bride_creates_enquiry_and_ack`, `test_planner_form` | Done |
 | Unrelated Gmail messages do not create enquiries | Only `create_enquiry` creates enquiries; it is called by the forms and Spam review only | Done (sync filter in Phase 3) |
 | Held, honeypot, too-fast and rate-limited submissions never create an enquiry or acknowledgement | `test_suspicious_is_held_without_enquiry_or_email`, `test_too_fast_is_held`, `test_turnstile_failure_is_rejected`, `test_rate_limit_per_email` | Done |
 | Approving a held submission creates exactly one enquiry and sends the acknowledgement | `test_spam_review_approve_and_delete` | Done (email sent once the worker lands in Phase 3) |
+| Jessica approves every quote before it is sent; the email sent is exactly the one previewed | `test_cannot_approve_without_submit`, `test_preview_is_frozen_after_approval`, `test_flags_must_be_acknowledged` | Done |
+| A revised quote supersedes the earlier one and keeps its history | `test_revision_supersedes_and_keeps_v1` | Done |
+| A failed quote email doesn't advance the pipeline and can be retried | `test_failed_send_leaves_pipeline_and_can_retry` | Done |

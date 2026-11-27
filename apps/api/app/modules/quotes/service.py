@@ -406,6 +406,15 @@ def to_dict(db: Session, q: Quote) -> dict[str, Any]:
     card = db.get(RateCardRow, q.rate_card_id)
     data = {c.name: getattr(q, c.name) for c in Quote.__table__.columns}
     data["rate_card_version"] = card.version if card else None
+    data["active_rate_card_version"] = (
+        db.scalar(
+            select(RateCardRow.version).where(
+                RateCardRow.region == card.region, RateCardRow.is_active
+            )
+        )
+        if card
+        else None
+    )
     data["line_items"] = [asdict_line(li) for li in lines(db, q)]
     return data
 
