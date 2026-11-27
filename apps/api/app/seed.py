@@ -12,6 +12,7 @@ from sqlalchemy.dialects.postgresql import insert
 from app.core.config import get_settings
 from app.core.db import get_sessionmaker
 from app.demo_data import seed_demo
+from app.modules.email.templates import ensure_defaults as ensure_templates
 from app.modules.platform.audit import SYSTEM
 from app.modules.platform.models import SystemSetting
 from app.modules.pricing.service import ensure_defaults
@@ -41,9 +42,13 @@ def run() -> None:
                 .on_conflict_do_nothing(index_elements=["key"])
             )
         cards = ensure_defaults(db, SYSTEM)
+        tpls = ensure_templates(db, SYSTEM)
         demo = seed_demo(db) if get_settings().env == "local" else 0
         db.commit()
-    print(f"seed: {len(DEFAULT_SETTINGS)} settings, {cards} rate cards, {demo} demo enquiries")
+    print(
+        f"seed: {len(DEFAULT_SETTINGS)} settings, {cards} rate cards, "
+        f"{tpls} templates, {demo} demo enquiries"
+    )
 
 
 if __name__ == "__main__":

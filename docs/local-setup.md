@@ -25,7 +25,7 @@ The first start takes a few minutes while images download. It's ready when the l
 | Open | What it is |
 | --- | --- |
 | http://localhost:3000 | The CRM. Click **Local sign-in (this computer only)** |
-| http://localhost:8025 | Mailpit: every email the CRM sends locally lands here, nothing reaches real people |
+| http://localhost:8025 | Mailpit: every email the CRM sends locally lands here, nothing reaches real people. Submit a form and the acknowledgement appears within a few seconds |
 | http://localhost:8000/api/docs | API reference |
 
 ## Everyday commands
