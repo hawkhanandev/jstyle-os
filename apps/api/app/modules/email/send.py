@@ -104,18 +104,26 @@ def send_rendered(
     subject: str,
     html: str,
     text: str,
-    template_key: str,
+    template_key: str | None,
+    thread_id: uuid.UUID | None = None,
 ) -> EmailMessage:
-    """Send exact, already-rendered content in the enquiry's thread and store it."""
+    """Send exact, already-rendered content in the enquiry's thread and store it.
+
+    Without `thread_id` the enquiry's most recent conversation is continued.
+    """
     rfc_id = message_id_for(event.id)
     existing = db.scalar(select(EmailMessage).where(EmailMessage.rfc_message_id == rfc_id))
     if existing is not None:
         return existing
-    thread = db.scalar(
-        select(EmailThread)
-        .where(EmailThread.enquiry_id == enquiry.id)
-        .order_by(EmailThread.last_message_at.desc().nulls_last())
-        .limit(1)
+    thread = (
+        db.get(EmailThread, thread_id)
+        if thread_id
+        else db.scalar(
+            select(EmailThread)
+            .where(EmailThread.enquiry_id == enquiry.id)
+            .order_by(EmailThread.last_message_at.desc().nulls_last())
+            .limit(1)
+        )
     )
     previous = (
         db.scalars(

@@ -95,3 +95,10 @@ Create the test database once with
   is not running. Run `docker compose logs api` to see why, then `docker compose up --build` again.
 - **Database errors after pulling new code**: run `docker compose up --build` again; migrations
   run on every start.
+
+## Testing client replies locally
+
+Gmail isn't connected locally, so client replies can't arrive by email. Open an enquiry, go to the
+**Email** tab and use **Local testing: pretend the client replied**. The reply goes through the same
+matching code the Gmail sync will use, then shows up in the **Inbox** as unread. Replies you send
+from the Inbox land in Mailpit.

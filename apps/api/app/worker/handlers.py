@@ -30,6 +30,26 @@ def email_send(db: Session, event: OutboxEvent, deps: Deps) -> None:
     deliver(db, event, deps.mailer, deps.settings)
 
 
+def email_reply(db: Session, event: OutboxEvent, deps: Deps) -> None:
+    """A reply Jessica typed in the Inbox. Sent as written, in the same conversation."""
+    p = event.payload
+    e = db.get(Enquiry, uuid.UUID(p["enquiry_id"]))
+    if e is None:
+        raise PermanentError("enquiry not found")
+    send_rendered(
+        db,
+        event,
+        deps.mailer,
+        deps.settings,
+        e,
+        subject=p["subject"],
+        html=p["html"],
+        text=p["text"],
+        template_key=None,
+        thread_id=uuid.UUID(p["thread_id"]),
+    )
+
+
 def quote_send(db: Session, event: OutboxEvent, deps: Deps) -> None:
     q = db.get(Quote, uuid.UUID(event.payload["quote_id"]), with_for_update=True)
     if q is None:
@@ -62,6 +82,7 @@ def quote_send_failed(db: Session, event: OutboxEvent) -> None:
 
 HANDLERS: dict[str, Handler] = {
     "email.send": email_send,
+    "email.reply": email_reply,
     "quote.send": quote_send,
 }
 
