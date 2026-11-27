@@ -1,6 +1,11 @@
-from fastapi import APIRouter, FastAPI
+from typing import Annotated
+
+from fastapi import APIRouter, Depends, FastAPI, Response
+from sqlalchemy import text
+from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
+from app.core.db import get_session
 
 app = FastAPI(
     title="Jstyle Business OS",
@@ -12,9 +17,19 @@ api = APIRouter(prefix="/api")
 
 
 @api.get("/health")
-def health() -> dict[str, str]:
-    """Liveness check. Database and Redis checks are added with the platform core."""
-    return {"status": "ok", "env": get_settings().env}
+def health(response: Response, db: Annotated[Session, Depends(get_session)]) -> dict[str, str]:
+    """Used by Docker health checks and Uptime Kuma. Redis is added with the worker."""
+    try:
+        db.execute(text("SELECT 1"))
+        database = "ok"
+    except Exception:
+        database = "down"
+        response.status_code = 503
+    return {
+        "status": "ok" if database == "ok" else "degraded",
+        "database": database,
+        "env": get_settings().env,
+    }
 
 
 app.include_router(api)
