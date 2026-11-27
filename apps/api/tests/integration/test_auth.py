@@ -83,3 +83,17 @@ def test_dev_login_only_in_local(db: Session) -> None:
                 assert c.post("/api/auth/dev-login").status_code == expected
     finally:
         app.dependency_overrides.clear()
+
+
+def test_google_start_without_credentials_redirects_back(db: Session) -> None:
+    settings = Settings(env="local", allowed_email=OWNER, public_base_url="http://testserver")
+    app.dependency_overrides[get_session] = lambda: db
+    app.dependency_overrides[get_settings] = lambda: settings
+    try:
+        with TestClient(app, follow_redirects=False) as c:
+            assert c.get("/api/auth/config").json() == {"dev_login": True, "google": False}
+            r = c.get("/api/auth/google/start")
+            assert r.status_code == 302
+            assert r.headers["location"] == "/sign-in?error=google_not_configured"
+    finally:
+        app.dependency_overrides.clear()

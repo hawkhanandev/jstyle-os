@@ -32,6 +32,10 @@ class Settings(BaseSettings):
     session_absolute_days: int = 30
 
     @property
+    def google_configured(self) -> bool:
+        return bool(self.google_client_id and self.google_client_secret)
+
+    @property
     def secure_cookies(self) -> bool:
         return self.public_base_url.startswith("https://")
 
