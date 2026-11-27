@@ -1,0 +1,20 @@
+@page { size: Letter; margin: 18mm 16mm 20mm; @bottom-center { content: "Page " counter(page) " of " counter(pages); font-size: 8pt; color: #78716c; } }
+body { font-family: "DejaVu Sans", "Helvetica", sans-serif; font-size: 9.5pt; color: #292524; line-height: 1.45; }
+h1 { font-family: "DejaVu Serif", Georgia, serif; font-weight: normal; font-size: 22pt; margin: 0; color: #1c1917; }
+h2 { font-size: 11pt; margin: 18px 0 6px; color: #1c1917; border-bottom: 1px solid #e7e5e4; padding-bottom: 3px; }
+.muted { color: #78716c; }
+.head { display: flex; justify-content: space-between; align-items: flex-start; }
+.head .biz { text-align: right; font-size: 8.5pt; }
+.logo { max-height: 60px; }
+table { width: 100%; border-collapse: collapse; margin-top: 4px; }
+td, th { padding: 5px 4px; border-bottom: 1px solid #f5f5f4; vertical-align: top; text-align: left; }
+th { font-size: 8pt; text-transform: uppercase; letter-spacing: .05em; color: #78716c; }
+.num { text-align: right; white-space: nowrap; }
+.total td { font-weight: bold; border-top: 1px solid #a8a29e; }
+.grid { display: flex; gap: 24px; }
+.grid > div { flex: 1; }
+.sign { margin-top: 28px; display: flex; gap: 40px; }
+.sign div { flex: 1; border-top: 1px solid #57534e; padding-top: 4px; font-size: 8.5pt; }
+.box { background: #fafaf9; border: 1px solid #e7e5e4; padding: 8px 10px; margin-top: 10px; }
+.terms { font-size: 8.8pt; }
+.draft { color: #b91c1c; font-weight: bold; }

@@ -2,6 +2,7 @@
 
 from app.modules.auth.models import User, UserSession
 from app.modules.bookings.models import Booking
+from app.modules.documents.models import Contract, Document, Invoice, InvoiceCounter
 from app.modules.email.models import EmailMessage, EmailTemplate, EmailThread
 from app.modules.enquiries.models import Enquiry, PipelineHistory, PlannerCompany, Task
 from app.modules.forms.models import FormSubmission
@@ -11,6 +12,10 @@ from app.modules.quotes.models import Quote, QuoteLineItem
 from app.modules.replies.models import ReplySuggestion
 
 __all__ = [
+    "Contract",
+    "Document",
+    "Invoice",
+    "InvoiceCounter",
     "Booking",
     "ReplySuggestion",
     "Quote",

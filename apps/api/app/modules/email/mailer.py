@@ -10,6 +10,13 @@ from typing import Protocol
 
 
 @dataclass(frozen=True)
+class Attachment:
+    filename: str
+    content_type: str
+    data: bytes
+
+
+@dataclass(frozen=True)
 class OutgoingMail:
     from_addr: str
     to: list[str]
@@ -20,6 +27,7 @@ class OutgoingMail:
     in_reply_to: str | None = None
     references: list[str] = field(default_factory=list)
     provider_thread_id: str | None = None
+    attachments: list[Attachment] = field(default_factory=list)
 
 
 @dataclass(frozen=True)
@@ -45,6 +53,9 @@ def to_mime(mail: OutgoingMail) -> MimeMessage:
         msg["References"] = " ".join(mail.references)
     msg.set_content(mail.text)
     msg.add_alternative(mail.html, subtype="html")
+    for a in mail.attachments:
+        maintype, _, subtype = a.content_type.partition("/")
+        msg.add_attachment(a.data, maintype=maintype, subtype=subtype, filename=a.filename)
     return msg
 
 

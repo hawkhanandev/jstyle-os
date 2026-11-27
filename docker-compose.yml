@@ -42,10 +42,14 @@ services:
       JSTYLE_ALLOWED_EMAIL: ${JSTYLE_ALLOWED_EMAIL:-owner@jstyle.local}
       JSTYLE_SMTP_HOST: mailpit
       JSTYLE_SMTP_PORT: "1025"
+      JSTYLE_STORAGE_DIR: /data/documents
     command: >
       sh -c "alembic upgrade head && python -m app.seed &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
-    volumes: ["./apps/api/app:/app/app", "./apps/api/migrations:/app/migrations"]
+    volumes:
+      - ./apps/api/app:/app/app
+      - ./apps/api/migrations:/app/migrations
+      - documents:/data/documents
     ports: ["127.0.0.1:${JSTYLE_API_PORT:-8000}:8000"]
     depends_on:
       postgres: { condition: service_healthy }
@@ -64,8 +68,9 @@ services:
       JSTYLE_ALLOWED_EMAIL: ${JSTYLE_ALLOWED_EMAIL:-owner@jstyle.local}
       JSTYLE_SMTP_HOST: mailpit
       JSTYLE_SMTP_PORT: "1025"
+      JSTYLE_STORAGE_DIR: /data/documents
     command: python -m app.worker
-    volumes: ["./apps/api/app:/app/app"]
+    volumes: ["./apps/api/app:/app/app", "documents:/data/documents"]
     depends_on:
       api: { condition: service_started }
     restart: unless-stopped
@@ -80,3 +85,4 @@ services:
 
 volumes:
   pgdata:
+  documents:

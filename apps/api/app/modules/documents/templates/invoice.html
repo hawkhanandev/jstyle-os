@@ -1,0 +1,32 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>{{ css }}</style></head>
+<body>
+{% with title = "Invoice " ~ number %}{% include "_header.html" %}{% endwith %}
+
+<div class="grid" style="margin-top:18px">
+  <div>
+    <h2>Bill to</h2>
+    {{ client.name }}<br>{{ client.email }}
+  </div>
+  <div>
+    <h2>Details</h2>
+    Invoice {{ number }}<br>
+    Issued {{ issued }}<br>
+    <strong>Due {{ due }}</strong><br>
+    Wedding {{ wedding.date }}
+  </div>
+</div>
+
+<h2>{{ heading }}</h2>
+<table>
+  <tr><th>Description</th><th class="num">Amount</th></tr>
+  {% for l in lines %}<tr><td>{{ l.description }}</td><td class="num">{{ l.amount }}</td></tr>{% endfor %}
+  <tr class="total"><td>Amount due</td><td class="num">{{ amount }}</td></tr>
+</table>
+
+<div class="box">
+  <strong>How to pay.</strong> Venmo {{ payment.venmo }} or Zelle {{ payment.zelle }}.
+  Please include invoice number {{ number }} in the payment note.
+</div>
+<p class="muted" style="margin-top:14px">Booking total {{ totals.total }} · deposit {{ totals.deposit }} · balance {{ totals.balance }}</p>
+</body></html>

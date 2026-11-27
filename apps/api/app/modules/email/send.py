@@ -12,10 +12,11 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings
 from app.core.db import utcnow
 from app.modules.email import templates
-from app.modules.email.mailer import Mailer, OutgoingMail
+from app.modules.email.mailer import Attachment, Mailer, OutgoingMail
 from app.modules.email.models import EmailMessage, EmailThread
 from app.modules.enquiries.models import CLOSED, Enquiry, Pipeline
-from app.modules.platform.models import OutboxEvent, SystemSetting
+from app.modules.platform import settings
+from app.modules.platform.models import OutboxEvent
 from app.modules.platform.outbox import PermanentError
 
 REGION_NAMES = {"HI": "Hawaii", "OR": "Oregon"}
@@ -30,8 +31,7 @@ def message_id_for(event_id: uuid.UUID) -> str:
 
 
 def _setting(db: Session, key: str) -> Any:
-    row = db.get(SystemSetting, key)
-    return row.value if row else {}
+    return settings.get(db, key) or {}
 
 
 def long_date(d: date | None) -> str:
@@ -106,6 +106,7 @@ def send_rendered(
     text: str,
     template_key: str | None,
     thread_id: uuid.UUID | None = None,
+    attachments: list[Attachment] | None = None,
 ) -> EmailMessage:
     """Send exact, already-rendered content in the enquiry's thread and store it.
 
@@ -144,6 +145,7 @@ def send_rendered(
         in_reply_to=previous[-1] if previous else None,
         references=list(previous[-10:]),
         provider_thread_id=thread.provider_thread_id if thread else None,
+        attachments=attachments or [],
     )
     result = mailer.send(mail)
 

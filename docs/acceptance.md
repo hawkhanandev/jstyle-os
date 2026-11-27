@@ -18,3 +18,7 @@
 | Reply suggestions can be corrected or ignored | `test_staff_can_correct_the_suggestion`, `tests/unit/test_classify.py` | Done |
 | A declining client closes the enquiry and any open revision | `test_decline_closes_and_withdraws_open_revision` | Done |
 | The booking gate lists what's missing (contract, deposit, stylists) | `test_acceptance_needs_a_staff_click`, `test_staff_acceptance_and_stylists` | Done (contract in Phase 5, deposit in Phase 6) |
+| Contract and deposit invoice arrive in one email; the invoice equals the accepted quote's deposit | `test_full_contract_flow_to_booked` | Done |
+| Marking a contract signed is audited, stores the evidence and re-runs the gate | `test_full_contract_flow_to_booked` | Done |
+| Invoice numbers are yearly and never repeat | `test_invoice_numbers_are_yearly_and_sequential` | Done |
+| A failed contract email leaves the pipeline unchanged | `test_failed_send_returns_contract_to_prepared` | Done |

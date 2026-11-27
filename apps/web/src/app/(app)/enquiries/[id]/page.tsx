@@ -9,6 +9,8 @@ import { fmt, toCents } from "@/lib/money";
 import { QuotesTab } from "@/components/quotes/QuotesTab";
 import { EmailTab } from "@/components/inbox/EmailTab";
 import { BookingPanel } from "@/components/bookings/BookingPanel";
+import { ContractTab } from "@/components/paperwork/ContractTab";
+import { InvoicesTab } from "@/components/paperwork/InvoicesTab";
 
 type Line = { kind: string; description: string; quantity: number; unit_cents: number; amount_cents: number };
 type Price = {
@@ -249,9 +251,12 @@ export default function EnquiryPage() {
 
       {tab === "Email" && <EmailTab enquiryId={e.id} onChange={load} />}
 
+      {tab === "Contract" && <ContractTab enquiryId={e.id} pipelineStatus={e.pipeline_status} onChange={load} />}
+      {tab === "Invoices" && <InvoicesTab enquiryId={e.id} />}
+
       {tab === "Quotes" && <QuotesTab enquiryId={e.id} region={e.region} onChange={load} />}
 
-      {!["Overview", "Email", "Quotes", "Activity"].includes(tab) && (
+      {!["Overview", "Email", "Quotes", "Contract", "Invoices", "Activity"].includes(tab) && (
         <div className="mt-6 rounded-lg border border-dashed border-stone-300 bg-white p-8 text-stone-500">
           {tab} arrives in a later phase.
         </div>

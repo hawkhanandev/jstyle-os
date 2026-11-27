@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Automations } from "@/components/settings/Automations";
+import { Business } from "@/components/settings/Business";
 import { RateCards } from "@/components/settings/RateCards";
 import { Templates } from "@/components/settings/Templates";
 import { api } from "@/lib/api";
@@ -27,8 +28,8 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl">
       <h1 className="font-serif text-2xl text-stone-900">Settings</h1>
-      <p className="mt-1 text-stone-600">Business details arrive with Phase 5.</p>
       <div className="mt-8 space-y-8">
+        <Business />
         <RateCards />
         <Templates />
         <Automations />

@@ -1,0 +1,12 @@
+<div class="head">
+  <div>
+    {% if business.logo_data_uri %}<img class="logo" src="{{ business.logo_data_uri }}" alt="">{% else %}<h1>{{ business.name }}</h1>{% endif %}
+    <div class="muted">{{ title }}</div>
+  </div>
+  <div class="biz">
+    <strong>{{ business.legal_name or business.name }}</strong><br>
+    {% for line in business.address_lines %}{{ line }}<br>{% endfor %}
+    {% if business.email %}{{ business.email }}<br>{% endif %}
+    {% if business.phone %}{{ business.phone }}{% endif %}
+  </div>
+</div>
