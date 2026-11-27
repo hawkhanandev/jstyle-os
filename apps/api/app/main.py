@@ -7,6 +7,7 @@ from sqlalchemy.orm import Session
 from app.core.config import get_settings
 from app.core.db import get_session
 from app.modules.auth.routes import router as auth_router
+from app.modules.enquiries.routes import router as enquiries_router
 from app.modules.pricing.routes import router as pricing_router
 
 app = FastAPI(
@@ -36,4 +37,5 @@ def health(response: Response, db: Annotated[Session, Depends(get_session)]) -> 
 
 api.include_router(auth_router)
 api.include_router(pricing_router)
+api.include_router(enquiries_router)
 app.include_router(api)
