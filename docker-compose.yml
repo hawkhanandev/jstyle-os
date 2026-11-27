@@ -1,5 +1,8 @@
 # Local development: `docker compose up --build`, then open http://localhost:3000
 # Everything runs on your machine. No Google, Cloudflare or VPS account is needed.
+#
+# Host ports avoid the usual defaults so they don't clash with a Postgres or Redis you
+# already run. Change any of them in a .env file next to this one, e.g. JSTYLE_WEB_PORT=3100.
 name: jstyle-os
 
 services:
@@ -9,7 +12,7 @@ services:
       POSTGRES_USER: jstyle
       POSTGRES_PASSWORD: jstyle
       POSTGRES_DB: jstyle
-    ports: ["127.0.0.1:5432:5432"]
+    ports: ["127.0.0.1:${JSTYLE_PG_PORT:-55432}:5432"]
     volumes: [pgdata:/var/lib/postgresql/data]
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "jstyle"]
@@ -19,12 +22,12 @@ services:
   redis:
     image: redis:7
     command: ["redis-server", "--appendonly", "yes"]
-    ports: ["127.0.0.1:6379:6379"]
+    # Not published to your machine; only the app containers use it.
 
   # Catches every email the CRM sends while running locally. Inbox at http://localhost:8025
   mailpit:
     image: axllent/mailpit:latest
-    ports: ["127.0.0.1:8025:8025", "127.0.0.1:1025:1025"]
+    ports: ["127.0.0.1:${JSTYLE_MAIL_PORT:-8025}:8025"]
 
   api:
     build: ./apps/api
@@ -35,7 +38,7 @@ services:
       JSTYLE_ENV: local
       JSTYLE_DATABASE_URL: postgresql+psycopg://jstyle:jstyle@postgres:5432/jstyle
       JSTYLE_REDIS_URL: redis://redis:6379/0
-      JSTYLE_PUBLIC_BASE_URL: http://localhost:3000
+      JSTYLE_PUBLIC_BASE_URL: http://localhost:${JSTYLE_WEB_PORT:-3000}
       JSTYLE_ALLOWED_EMAIL: ${JSTYLE_ALLOWED_EMAIL:-owner@jstyle.local}
       JSTYLE_SMTP_HOST: mailpit
       JSTYLE_SMTP_PORT: "1025"
@@ -43,7 +46,7 @@ services:
       sh -c "alembic upgrade head && python -m app.seed &&
              uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
     volumes: ["./apps/api/app:/app/app", "./apps/api/migrations:/app/migrations"]
-    ports: ["127.0.0.1:8000:8000"]
+    ports: ["127.0.0.1:${JSTYLE_API_PORT:-8000}:8000"]
     depends_on:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
@@ -53,7 +56,7 @@ services:
     environment:
       API_URL: http://api:8000
     volumes: ["./apps/web/src:/app/src"]
-    ports: ["127.0.0.1:3000:3000"]
+    ports: ["127.0.0.1:${JSTYLE_WEB_PORT:-3000}:3000"]
     depends_on: [api]
 
 volumes:
