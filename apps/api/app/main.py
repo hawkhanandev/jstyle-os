@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
 from app.core.db import get_session
+from app.modules.auth.routes import router as auth_router
 
 app = FastAPI(
     title="Jstyle Business OS",
@@ -32,4 +33,5 @@ def health(response: Response, db: Annotated[Session, Depends(get_session)]) -> 
     }
 
 
+api.include_router(auth_router)
 app.include_router(api)
