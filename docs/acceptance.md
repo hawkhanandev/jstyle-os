@@ -14,3 +14,7 @@
 | Jessica approves every quote before it is sent; the email sent is exactly the one previewed | `test_cannot_approve_without_submit`, `test_preview_is_frozen_after_approval`, `test_flags_must_be_acknowledged` | Done |
 | A revised quote supersedes the earlier one and keeps its history | `test_revision_supersedes_and_keeps_v1` | Done |
 | A failed quote email doesn't advance the pipeline and can be retried | `test_failed_send_leaves_pipeline_and_can_retry` | Done |
+| A client's acceptance changes nothing until staff confirm it | `test_acceptance_needs_a_staff_click` | Done |
+| Reply suggestions can be corrected or ignored | `test_staff_can_correct_the_suggestion`, `tests/unit/test_classify.py` | Done |
+| A declining client closes the enquiry and any open revision | `test_decline_closes_and_withdraws_open_revision` | Done |
+| The booking gate lists what's missing (contract, deposit, stylists) | `test_acceptance_needs_a_staff_click`, `test_staff_acceptance_and_stylists` | Done (contract in Phase 5, deposit in Phase 6) |
