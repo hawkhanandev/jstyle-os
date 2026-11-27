@@ -6,6 +6,7 @@ import { useCallback, useEffect, useState } from "react";
 import { api, ApiError } from "@/lib/api";
 import { type EnquiryDetail, FLAG_LABELS, formatDate, REGION_NAMES, statusLabel } from "@/lib/enquiries";
 import { fmt, toCents } from "@/lib/money";
+import { QuotesTab } from "@/components/quotes/QuotesTab";
 
 type Line = { kind: string; description: string; quantity: number; unit_cents: number; amount_cents: number };
 type Price = {
@@ -184,7 +185,7 @@ export default function EnquiryPage() {
 
           <section className="rounded-lg border border-stone-200 bg-white p-5">
             <h2 className="font-medium">Price preview</h2>
-            <p className="text-xs text-stone-500">From the active rate card. The quote is created in Phase 3.</p>
+            <p className="text-xs text-stone-500">From the active rate card. Create the quote on the Quotes tab.</p>
             {price ? (
               <>
                 <table className="mt-3 w-full text-sm">
@@ -240,7 +241,9 @@ export default function EnquiryPage() {
         </ul>
       )}
 
-      {!["Overview", "Activity"].includes(tab) && (
+      {tab === "Quotes" && <QuotesTab enquiryId={e.id} region={e.region} onChange={load} />}
+
+      {!["Overview", "Quotes", "Activity"].includes(tab) && (
         <div className="mt-6 rounded-lg border border-dashed border-stone-300 bg-white p-8 text-stone-500">
           {tab} arrives in a later phase.
         </div>

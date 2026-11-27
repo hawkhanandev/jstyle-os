@@ -81,7 +81,36 @@ def deliver(db: Session, event: OutboxEvent, mailer: Mailer, settings: Settings)
 
     context = base_context(db, enquiry) | payload.get("context", {})
     rendered = templates.render(db, key, context)
+    return send_rendered(
+        db,
+        event,
+        mailer,
+        settings,
+        enquiry,
+        subject=rendered.subject,
+        html=rendered.html,
+        text=rendered.text,
+        template_key=key,
+    )
 
+
+def send_rendered(
+    db: Session,
+    event: OutboxEvent,
+    mailer: Mailer,
+    settings: Settings,
+    enquiry: Enquiry,
+    *,
+    subject: str,
+    html: str,
+    text: str,
+    template_key: str,
+) -> EmailMessage:
+    """Send exact, already-rendered content in the enquiry's thread and store it."""
+    rfc_id = message_id_for(event.id)
+    existing = db.scalar(select(EmailMessage).where(EmailMessage.rfc_message_id == rfc_id))
+    if existing is not None:
+        return existing
     thread = db.scalar(
         select(EmailThread)
         .where(EmailThread.enquiry_id == enquiry.id)
@@ -100,9 +129,9 @@ def deliver(db: Session, event: OutboxEvent, mailer: Mailer, settings: Settings)
     mail = OutgoingMail(
         from_addr=from_address(db, settings),
         to=[enquiry.email],
-        subject=rendered.subject,
-        html=rendered.html,
-        text=rendered.text,
+        subject=subject,
+        html=html,
+        text=text,
         message_id=rfc_id,
         in_reply_to=previous[-1] if previous else None,
         references=list(previous[-10:]),
@@ -113,9 +142,7 @@ def deliver(db: Session, event: OutboxEvent, mailer: Mailer, settings: Settings)
     now = utcnow()
     if thread is None:
         thread = EmailThread(
-            enquiry_id=enquiry.id,
-            subject=rendered.subject,
-            provider_thread_id=result.provider_thread_id,
+            enquiry_id=enquiry.id, subject=subject, provider_thread_id=result.provider_thread_id
         )
         db.add(thread)
         db.flush()
@@ -127,11 +154,11 @@ def deliver(db: Session, event: OutboxEvent, mailer: Mailer, settings: Settings)
         direction="outbound",
         from_addr=mail.from_addr,
         to_addrs=mail.to,
-        subject=mail.subject,
-        body_html=mail.html,
-        body_text=mail.text,
+        subject=subject,
+        body_html=html,
+        body_text=text,
         sent_at=now,
-        template_key=key,
+        template_key=template_key,
         outbox_event_id=event.id,
     )
     db.add(msg)

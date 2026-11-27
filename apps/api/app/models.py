@@ -6,8 +6,11 @@ from app.modules.enquiries.models import Enquiry, PipelineHistory, PlannerCompan
 from app.modules.forms.models import FormSubmission
 from app.modules.platform.models import AuditLog, OutboxEvent, SystemSetting
 from app.modules.pricing.models import RateCardRow
+from app.modules.quotes.models import Quote, QuoteLineItem
 
 __all__ = [
+    "Quote",
+    "QuoteLineItem",
     "EmailMessage",
     "EmailTemplate",
     "EmailThread",

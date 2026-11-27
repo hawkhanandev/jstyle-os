@@ -12,6 +12,7 @@ from app.modules.enquiries.routes import router as enquiries_router
 from app.modules.forms.routes import public as forms_public
 from app.modules.forms.routes import staff as forms_staff
 from app.modules.pricing.routes import router as pricing_router
+from app.modules.quotes.routes import router as quotes_router
 
 app = FastAPI(
     title="Jstyle Business OS",
@@ -42,6 +43,7 @@ api.include_router(auth_router)
 api.include_router(pricing_router)
 api.include_router(enquiries_router)
 api.include_router(email_router)
+api.include_router(quotes_router)
 api.include_router(forms_public)
 api.include_router(forms_staff)
 app.include_router(api)
