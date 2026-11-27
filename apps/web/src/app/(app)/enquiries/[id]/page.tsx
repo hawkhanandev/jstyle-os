@@ -8,6 +8,7 @@ import { type EnquiryDetail, FLAG_LABELS, formatDate, REGION_NAMES, statusLabel 
 import { fmt, toCents } from "@/lib/money";
 import { QuotesTab } from "@/components/quotes/QuotesTab";
 import { EmailTab } from "@/components/inbox/EmailTab";
+import { BookingPanel } from "@/components/bookings/BookingPanel";
 
 type Line = { kind: string; description: string; quantity: number; unit_cents: number; amount_cents: number };
 type Price = {
@@ -97,6 +98,7 @@ export default function EnquiryPage() {
           {e.pipeline_status === "NEW_INQUIRY" && <Btn onClick={() => act("start-review")}>Start review</Btn>}
           {["UNDER_REVIEW"].includes(e.pipeline_status) && <Btn onClick={() => act("request-info", true)}>Request info</Btn>}
           {e.pipeline_status === "NEEDS_INFORMATION" && <Btn onClick={() => act("reopen")}>Back to review</Btn>}
+          {["QUOTE_SENT", "DISCUSSION_REVISION"].includes(e.pipeline_status) && <Btn onClick={() => act("mark-expired", true)}>Mark expired</Btn>}
           {!closed && <Btn onClick={() => act("mark-lost", true)}>Mark lost</Btn>}
           {closed && e.pipeline_status !== "CANCELLED" && <Btn onClick={() => act("reopen")}>Reopen</Btn>}
         </div>
@@ -184,6 +186,8 @@ export default function EnquiryPage() {
             </div>
           </section>
 
+          <div className="space-y-6">
+          <BookingPanel enquiryId={e.id} stamp={e.pipeline_status} />
           <section className="rounded-lg border border-stone-200 bg-white p-5">
             <h2 className="font-medium">Price preview</h2>
             <p className="text-xs text-stone-500">From the active rate card. Create the quote on the Quotes tab.</p>
@@ -226,6 +230,7 @@ export default function EnquiryPage() {
               <p className="mt-3 text-sm text-stone-500">Set the region to see a price.</p>
             )}
           </section>
+          </div>
         </div>
       )}
 
@@ -242,7 +247,7 @@ export default function EnquiryPage() {
         </ul>
       )}
 
-      {tab === "Email" && <EmailTab enquiryId={e.id} />}
+      {tab === "Email" && <EmailTab enquiryId={e.id} onChange={load} />}
 
       {tab === "Quotes" && <QuotesTab enquiryId={e.id} region={e.region} onChange={load} />}
 

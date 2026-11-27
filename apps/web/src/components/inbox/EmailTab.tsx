@@ -4,9 +4,11 @@ import { useCallback, useEffect, useState } from "react";
 import { Conversation } from "@/components/inbox/Conversation";
 import { api, ApiError } from "@/lib/api";
 import { type ThreadSummary, when } from "@/lib/inbox";
+import { ReplyCard, type Suggestion } from "@/components/replies/ReplyCard";
 
-export function EmailTab({ enquiryId }: { enquiryId: string }) {
+export function EmailTab({ enquiryId, onChange }: { enquiryId: string; onChange?: () => void }) {
   const [threads, setThreads] = useState<ThreadSummary[] | null>(null);
+  const [suggestions, setSuggestions] = useState<Suggestion[]>([]);
   const [selected, setSelected] = useState<string | null>(null);
   const [local, setLocal] = useState(false);
   const [sim, setSim] = useState("");
@@ -14,8 +16,12 @@ export function EmailTab({ enquiryId }: { enquiryId: string }) {
 
   const load = useCallback(
     () =>
-      api<ThreadSummary[]>(`/threads?enquiry_id=${enquiryId}`).then((ts) => {
+      Promise.all([
+        api<ThreadSummary[]>(`/threads?enquiry_id=${enquiryId}`),
+        api<Suggestion[]>(`/replies?enquiry_id=${enquiryId}`),
+      ]).then(([ts, ss]) => {
         setThreads(ts);
+        setSuggestions(ss);
         setSelected((cur) => cur ?? ts[0]?.id ?? null);
       }),
     [enquiryId],
@@ -44,6 +50,17 @@ export function EmailTab({ enquiryId }: { enquiryId: string }) {
   return (
     <div className="mt-6 space-y-4">
       {error && <p className="rounded-md bg-rose-50 p-2 text-sm text-rose-800">{error}</p>}
+      {suggestions.map((s) => (
+        <ReplyCard
+          key={s.id}
+          s={s}
+          showClient={false}
+          onDone={() => {
+            load();
+            onChange?.();
+          }}
+        />
+      ))}
       {threads.length === 0 && <p className="text-stone-500">No emails with this client yet.</p>}
       {threads.length > 1 && (
         <div className="flex flex-wrap gap-2 text-sm">

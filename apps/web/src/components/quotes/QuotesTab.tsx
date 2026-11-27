@@ -58,7 +58,13 @@ export function QuotesTab({ enquiryId, region, onChange }: { enquiryId: string; 
           <h2 className="font-medium">Earlier versions</h2>
           <ul className="mt-2 space-y-2">
             {history.map((q) => (
-              <HistoryRow key={q.id} quote={q} />
+              <HistoryRow
+                key={q.id}
+                quote={q}
+                onAccept={() => {
+                  if (window.confirm(`Record that the client accepted version ${q.version} (${fmt(q.total_cents)})?`)) run(() => quoteAction(q.id, "accept"));
+                }}
+              />
             ))}
           </ul>
         </section>
@@ -67,7 +73,7 @@ export function QuotesTab({ enquiryId, region, onChange }: { enquiryId: string; 
   );
 }
 
-function HistoryRow({ quote: q }: { quote: Quote }) {
+function HistoryRow({ quote: q, onAccept }: { quote: Quote; onAccept: () => void }) {
   const [openPreview, setOpenPreview] = useState(false);
   const s = QUOTE_STATUS[q.status];
   return (
@@ -78,8 +84,13 @@ function HistoryRow({ quote: q }: { quote: Quote }) {
         <span className="tabular-nums">{fmt(q.total_cents)}</span>
         {q.sent_at && <span className="text-stone-500">Sent {new Date(q.sent_at).toLocaleString()}</span>}
         {q.withdrawn_reason && <span className="text-stone-500">· {q.withdrawn_reason}</span>}
+        {q.status === "sent" && (
+          <button onClick={onAccept} className="ml-auto rounded-md border border-emerald-300 bg-emerald-50 px-2 py-0.5 text-emerald-900">
+            Client accepted (phone or in person)
+          </button>
+        )}
         {q.email_subject && (
-          <button onClick={() => setOpenPreview(!openPreview)} className="ml-auto text-rose-800 hover:underline">
+          <button onClick={() => setOpenPreview(!openPreview)} className={`${q.status === "sent" ? "" : "ml-auto "}text-rose-800 hover:underline`}>
             {openPreview ? "Hide email" : "Show email sent"}
           </button>
         )}

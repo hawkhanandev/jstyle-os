@@ -24,6 +24,7 @@ from app.modules.enquiries.models import CLOSED, Enquiry, Pipeline
 from app.modules.platform import outbox
 from app.modules.platform.audit import Actor, write_audit
 from app.modules.platform.models import OutboxEvent, OutboxStatus
+from app.modules.replies import service as replies
 
 
 class InboxError(Exception):
@@ -123,6 +124,8 @@ def ingest_inbound(db: Session, mail: InboundMail) -> IngestResult:
     if thread.last_message_at is None or when > thread.last_message_at:
         thread.last_message_at = when
     db.flush()
+    if enquiry is not None:
+        replies.on_inbound(db, enquiry, msg)
     return IngestResult("attached", msg.id, enquiry.id if enquiry else None)
 
 
