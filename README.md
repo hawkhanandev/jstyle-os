@@ -16,14 +16,14 @@ Design: see the Jstyle Business OS design document and execution plan.
 | `wordpress` | Form embed snippet |
 | `docs` | Acceptance checklist, setup guides |
 
-## Backend quick start
+## Run it locally
 
 ```bash
-docker compose -f infra/docker-compose.dev.yml up -d
-cd apps/api
-uv sync
-uv run pytest
-uv run uvicorn app.main:app --reload
+docker compose up --build
 ```
 
-Money is stored in integer cents. Pricing lives only in `app/modules/pricing` and is a pure function.
+Then open http://localhost:3000 and click **Local sign-in**. Emails land in Mailpit at
+http://localhost:8025. Full guide: [docs/local-setup.md](docs/local-setup.md).
+
+Money is stored in integer cents. Pricing lives only in `apps/api/app/modules/pricing` and is a
+pure function.

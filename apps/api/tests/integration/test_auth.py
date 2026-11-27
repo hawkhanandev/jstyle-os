@@ -118,3 +118,16 @@ def test_sessions_list_and_logout_everywhere(client: TestClient, db: Session) ->
         == 204
     )
     assert all(r.revoked_at for r in db.scalars(select(UserSession)))
+
+
+def test_dev_login_only_in_local(db: Session) -> None:
+    app.dependency_overrides[get_session] = lambda: db
+    try:
+        for env, expected in (("production", 404), ("local", 303)):
+            settings = Settings(env=env, allowed_email=OWNER, public_base_url="http://testserver")
+            app.dependency_overrides[get_settings] = lambda s=settings: s
+            with TestClient(app, follow_redirects=False) as c:
+                assert c.get("/api/auth/config").json()["dev_login"] is (env == "local")
+                assert c.post("/api/auth/dev-login").status_code == expected
+    finally:
+        app.dependency_overrides.clear()
