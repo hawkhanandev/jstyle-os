@@ -18,6 +18,12 @@ class Settings(BaseSettings):
     # Signs the short-lived OAuth state cookie. Generate with `openssl rand -hex 32`.
     secret_key: str = "dev-only-change-me"
 
+    # Cloudflare Turnstile. Empty = check skipped (local development).
+    turnstile_site_key: str = ""
+    turnstile_secret_key: str = ""
+    # Public forms are embedded on this site (CORS and frame-ancestors).
+    wordpress_origin: str = ""
+
     # Local only: outgoing email goes to Mailpit instead of Gmail (wired up in Phase 3).
     smtp_host: str = ""
     smtp_port: int = 1025

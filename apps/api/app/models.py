@@ -2,10 +2,12 @@
 
 from app.modules.auth.models import User, UserSession
 from app.modules.enquiries.models import Enquiry, PipelineHistory, PlannerCompany, Task
+from app.modules.forms.models import FormSubmission
 from app.modules.platform.models import AuditLog, OutboxEvent, SystemSetting
 from app.modules.pricing.models import RateCardRow
 
 __all__ = [
+    "FormSubmission",
     "Enquiry",
     "PipelineHistory",
     "PlannerCompany",
