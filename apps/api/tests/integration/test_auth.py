@@ -1,10 +1,7 @@
 from __future__ import annotations
 
-from collections.abc import Iterator
 from datetime import timedelta
-from urllib.parse import parse_qs, urlparse
 
-import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 from sqlalchemy.orm import Session
@@ -12,56 +9,11 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings, get_settings
 from app.core.db import get_session, utcnow
 from app.main import app
-from app.modules.auth.deps import CSRF_COOKIE, get_google
+from app.modules.auth.deps import CSRF_COOKIE
 from app.modules.auth.google import GoogleIdentity
 from app.modules.auth.models import UserSession
 from app.modules.platform.models import AuditLog
-
-OWNER = "jessica@jstyle.example"
-
-
-class FakeGoogle:
-    def __init__(self) -> None:
-        self.identity = GoogleIdentity(email=OWNER, email_verified=True, name="Jessica")
-        self.last_challenge = ""
-
-    def authorization_url(self, *, state: str, code_challenge: str, redirect_uri: str) -> str:
-        self.last_challenge = code_challenge
-        return f"https://accounts.google.test/auth?state={state}"
-
-    def fetch_identity(self, *, code: str, code_verifier: str, redirect_uri: str) -> GoogleIdentity:
-        assert code_verifier
-        return self.identity
-
-
-@pytest.fixture
-def google() -> FakeGoogle:
-    return FakeGoogle()
-
-
-@pytest.fixture
-def client(db: Session, google: FakeGoogle) -> Iterator[TestClient]:
-    settings = Settings(
-        allowed_email=OWNER, public_base_url="http://testserver", secret_key="test-secret"
-    )
-    app.dependency_overrides[get_session] = lambda: db
-    app.dependency_overrides[get_settings] = lambda: settings
-    app.dependency_overrides[get_google] = lambda: google
-    with TestClient(app, follow_redirects=False) as c:
-        yield c
-    app.dependency_overrides.clear()
-
-
-def sign_in(client: TestClient) -> str:
-    start = client.get("/api/auth/google/start")
-    assert start.status_code == 302
-    state = parse_qs(urlparse(start.headers["location"]).query)["state"][0]
-    res = client.get(
-        "/api/auth/google/callback",
-        params={"code": "abc", "state": state},
-        headers={"user-agent": "Mozilla/5.0 (Macintosh; Mac OS X) Chrome/130"},
-    )
-    return res.headers["location"]
+from tests.integration.conftest import OWNER, FakeGoogle, sign_in
 
 
 def test_allowed_account_signs_in_and_is_audited(client: TestClient, db: Session) -> None:
