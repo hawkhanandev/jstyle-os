@@ -49,13 +49,36 @@ use Google sign-in only.
 To try real Google sign-in locally, copy `.env.example` to `.env` and fill in
 `JSTYLE_GOOGLE_CLIENT_ID`, `JSTYLE_GOOGLE_CLIENT_SECRET` and `JSTYLE_ALLOWED_EMAIL`.
 
+## Ports
+
+The stack publishes only these ports on your machine, all bound to `127.0.0.1`:
+
+| Port | Service | Change it with |
+| --- | --- | --- |
+| 3000 | CRM web app | `JSTYLE_WEB_PORT` |
+| 8000 | API | `JSTYLE_API_PORT` |
+| 8025 | Mailpit inbox | `JSTYLE_MAIL_PORT` |
+| 55432 | Postgres (for running tests or a database tool) | `JSTYLE_PG_PORT` |
+
+Redis isn't published at all. Postgres uses 55432 rather than 5432, so a Postgres you
+already run on your machine doesn't get in the way.
+
+If a port is taken, create a file called `.env` next to `docker-compose.yml`, for example:
+
+```bash
+JSTYLE_WEB_PORT=3100
+JSTYLE_PG_PORT=55433
+```
+
+then run `docker compose up` again and open the new address (here http://localhost:3100).
+
 ## Running the tests
 
 ```bash
 docker compose up -d postgres
 cd apps/api
 uv sync
-JSTYLE_TEST_DATABASE_URL=postgresql+psycopg://jstyle:jstyle@localhost:5432/jstyle_test uv run pytest
+JSTYLE_TEST_DATABASE_URL=postgresql+psycopg://jstyle:jstyle@localhost:55432/jstyle_test uv run pytest
 ```
 
 Create the test database once with
@@ -63,8 +86,9 @@ Create the test database once with
 
 ## If something goes wrong
 
-- **Port already in use**: another program is using 3000, 5432, 6379, 8000 or 8025. Stop it, or
-  stop an old run with `docker compose down`.
+- **"port is already allocated" or "address already in use"**: another program is using one of
+  the ports above. Pick a different one in `.env` (see Ports), or stop an old run with
+  `docker compose down`.
 - **Sign-in loops back to the sign-in page**: clear cookies for localhost and try again.
 - **Database errors after pulling new code**: run `docker compose up --build` again; migrations
   run on every start.
