@@ -45,6 +45,10 @@ def _redirect_uri(settings: Settings) -> str:
 
 @router.get("/google/start")
 def google_start(settings: Cfg, google: Google) -> RedirectResponse:
+    if not settings.google_configured:
+        # Locally Google is optional: send the person back with a clear message
+        # instead of handing them to Google with an empty client id.
+        return RedirectResponse("/sign-in?error=google_not_configured", status_code=302)
     state = secrets.token_urlsafe(24)
     verifier, challenge = new_pkce_pair()
     url = google.authorization_url(
@@ -123,7 +127,7 @@ def _dev_login_enabled(settings: Settings) -> bool:
 
 @router.get("/config")
 def auth_config(settings: Cfg) -> dict[str, bool]:
-    return {"dev_login": _dev_login_enabled(settings)}
+    return {"dev_login": _dev_login_enabled(settings), "google": settings.google_configured}
 
 
 @router.post("/dev-login")

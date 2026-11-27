@@ -24,7 +24,7 @@ The first start takes a few minutes while images download. It's ready when the l
 
 | Open | What it is |
 | --- | --- |
-| http://localhost:3000 | The CRM. Click **Local sign-in (development only)** |
+| http://localhost:3000 | The CRM. Click **Local sign-in (this computer only)** |
 | http://localhost:8025 | Mailpit: every email the CRM sends locally lands here, nothing reaches real people |
 | http://localhost:8000/api/docs | API reference |
 
@@ -45,6 +45,7 @@ Code changes in `apps/api/app` and `apps/web/src` reload automatically.
 Locally the CRM allows `owner@jstyle.local` and shows a **Local sign-in** button, so no Google
 account is needed. That button only exists when `JSTYLE_ENV=local`; staging and production
 use Google sign-in only.
+The **Sign in with Google** button only appears once Google credentials are set.
 
 To try real Google sign-in locally, copy `.env.example` to `.env` and fill in
 `JSTYLE_GOOGLE_CLIENT_ID`, `JSTYLE_GOOGLE_CLIENT_SECRET` and `JSTYLE_ALLOWED_EMAIL`.
@@ -90,5 +91,7 @@ Create the test database once with
   the ports above. Pick a different one in `.env` (see Ports), or stop an old run with
   `docker compose down`.
 - **Sign-in loops back to the sign-in page**: clear cookies for localhost and try again.
+- **"Internal Server Error" on a `/api/...` page, or "The CRM server isn't responding"**: the API container
+  is not running. Run `docker compose logs api` to see why, then `docker compose up --build` again.
 - **Database errors after pulling new code**: run `docker compose up --build` again; migrations
   run on every start.

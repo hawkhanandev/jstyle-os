@@ -80,7 +80,11 @@ def google() -> FakeGoogle:
 @pytest.fixture
 def client(db: Session, google: FakeGoogle) -> Iterator[TestClient]:
     settings = Settings(
-        allowed_email=OWNER, public_base_url="http://testserver", secret_key="test-secret"
+        allowed_email=OWNER,
+        public_base_url="http://testserver",
+        secret_key="test-secret",
+        google_client_id="test-client",
+        google_client_secret="test-secret",
     )
     app.dependency_overrides[get_session] = lambda: db
     app.dependency_overrides[get_settings] = lambda: settings
