@@ -28,6 +28,9 @@ class Settings(BaseSettings):
     smtp_host: str = ""
     smtp_port: int = 1025
 
+    # Generated PDFs and uploads. Local disk for now; R2 when the server is set up.
+    storage_dir: str = "./data/documents"
+
     session_idle_hours: int = 12
     session_absolute_days: int = 30
 

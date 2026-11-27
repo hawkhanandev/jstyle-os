@@ -7,14 +7,19 @@ from dataclasses import dataclass
 from sqlalchemy.orm import Session
 
 from app.core.config import Settings
-from app.modules.email.mailer import Mailer
-from app.modules.email.send import Skip, deliver, send_rendered
+from app.modules.documents import service as documents
+from app.modules.documents import storage
+from app.modules.documents.models import Contract, ContractStatus, Document, Invoice
+from app.modules.email import templates
+from app.modules.email.mailer import Attachment, Mailer
+from app.modules.email.send import Skip, base_context, deliver, long_date, send_rendered
 from app.modules.enquiries.models import Enquiry
 from app.modules.platform.audit import SYSTEM
 from app.modules.platform.models import OutboxEvent
 from app.modules.platform.outbox import PermanentError
 from app.modules.quotes import service as quotes
 from app.modules.quotes.models import Quote, QuoteStatus
+from app.modules.quotes.service import money
 
 
 @dataclass
@@ -74,6 +79,50 @@ def quote_send(db: Session, event: OutboxEvent, deps: Deps) -> None:
     quotes.mark_sent(db, q, msg.id, SYSTEM)
 
 
+def booking_send_contract(db: Session, event: OutboxEvent, deps: Deps) -> None:
+    """One email with the contract and the deposit invoice attached."""
+    c = db.get(Contract, uuid.UUID(event.payload["contract_id"]), with_for_update=True)
+    inv = db.get(Invoice, uuid.UUID(event.payload["invoice_id"]))
+    if c is None or inv is None:
+        raise PermanentError("contract or invoice not found")
+    if c.status == ContractStatus.SENT:
+        return
+    if c.status != ContractStatus.SENDING:
+        raise Skip(f"contract is {c.status}, not waiting to send")
+    e = db.get(Enquiry, c.enquiry_id)
+    assert e is not None
+    files = []
+    for doc_id in (c.document_id, inv.document_id):
+        doc = db.get(Document, doc_id)
+        assert doc is not None
+        files.append(Attachment(doc.filename, doc.content_type, storage.read(doc)))
+    context = base_context(db, e) | {
+        "deposit": money(inv.amount_cents),
+        "deposit_due": long_date(inv.due_on),
+        "invoice_number": inv.number,
+    }
+    rendered = templates.render(db, "contract_invoice", context)
+    send_rendered(
+        db,
+        event,
+        deps.mailer,
+        deps.settings,
+        e,
+        subject=rendered.subject,
+        html=rendered.html,
+        text=rendered.text,
+        template_key="contract_invoice",
+        attachments=files,
+    )
+    documents.on_sent(db, c, inv, SYSTEM)
+
+
+def booking_send_contract_failed(db: Session, event: OutboxEvent) -> None:
+    c = db.get(Contract, uuid.UUID(event.payload["contract_id"]))
+    if c is not None:
+        documents.on_send_failed(db, c)
+
+
 def quote_send_failed(db: Session, event: OutboxEvent) -> None:
     q = db.get(Quote, uuid.UUID(event.payload["quote_id"]))
     if q is not None and q.status == QuoteStatus.SENDING:
@@ -84,9 +133,11 @@ HANDLERS: dict[str, Handler] = {
     "email.send": email_send,
     "email.reply": email_reply,
     "quote.send": quote_send,
+    "booking.send_contract": booking_send_contract,
 }
 
 # Called when an event ends in failed or dead, so the business record shows the failure.
 ON_GIVE_UP: dict[str, Callable[[Session, OutboxEvent], None]] = {
     "quote.send": quote_send_failed,
+    "booking.send_contract": booking_send_contract_failed,
 }

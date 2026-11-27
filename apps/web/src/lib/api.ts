@@ -15,7 +15,7 @@ export async function api<T>(path: string, init: RequestInit = {}): Promise<T> {
   const method = (init.method ?? "GET").toUpperCase();
   const headers = new Headers(init.headers);
   if (method !== "GET" && method !== "HEAD") headers.set("x-csrf-token", csrfToken());
-  if (init.body && !headers.has("content-type")) headers.set("content-type", "application/json");
+  if (init.body && !(init.body instanceof FormData) && !headers.has("content-type")) headers.set("content-type", "application/json");
   const res = await fetch(`/api${path}`, { ...init, headers, credentials: "same-origin" });
   if (res.status === 204) return undefined as T;
   const data = await res.json().catch(() => ({}));

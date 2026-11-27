@@ -1,0 +1,40 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>{{ css }}</style></head>
+<body>
+{% with title = "Service agreement · version " ~ version %}{% include "_header.html" %}{% endwith %}
+
+<div class="grid" style="margin-top:18px">
+  <div>
+    <h2>Client</h2>
+    {{ client.name }}<br>{{ client.email }}{% if client.phone %}<br>{{ client.phone }}{% endif %}
+    {% if client.planner %}<br><span class="muted">Booked through {{ client.planner }}</span>{% endif %}
+  </div>
+  <div>
+    <h2>Wedding</h2>
+    {{ wedding.date }}<br>{{ wedding.venue }}{% if wedding.address %}<br>{{ wedding.address }}{% endif %}
+    <br><span class="muted">{{ wedding.region }}</span>
+  </div>
+</div>
+
+<h2>Services</h2>
+<table>
+  <tr><th>Service</th><th class="num">Qty</th><th class="num">Amount</th></tr>
+  {% for l in lines %}<tr><td>{{ l.description }}</td><td class="num">{{ l.quantity }}</td><td class="num">{{ l.amount }}</td></tr>{% endfor %}
+  <tr class="total"><td colspan="2">Total</td><td class="num">{{ totals.total }}</td></tr>
+</table>
+
+<div class="box">
+  <strong>Payment schedule.</strong>
+  A non-refundable deposit of <strong>{{ totals.deposit }}</strong> is due by <strong>{{ deposit_due }}</strong> to reserve the date.
+  The balance of <strong>{{ totals.balance }}</strong> is due {{ balance_due }}.
+  Payment by Venmo ({{ payment.venmo }}) or Zelle ({{ payment.zelle }}).
+</div>
+
+<h2>Terms</h2>
+<div class="terms">{{ terms_html | safe }}</div>
+
+<div class="sign">
+  <div>Client signature and date<br><br>{{ client.name }}</div>
+  <div>{{ business.legal_name or business.name }}<br><br>Date</div>
+</div>
+</body></html>
