@@ -16,6 +16,7 @@ from app.modules.platform import outbox
 from app.modules.platform.audit import Actor, write_audit
 from app.modules.quotes import service as quotes
 from app.modules.quotes.models import Quote, QuoteStatus
+from app.modules.scheduling import service as scheduling
 
 GATE_LABELS = {
     "quote_accepted": "Quote accepted",
@@ -55,6 +56,7 @@ def accept_quote(
         raise BookingError("already_accepted", "This enquiry already has a booking.")
     q.status = QuoteStatus.ACCEPTED
     transition(db, e, Pipeline.QUOTE_ACCEPTED, actor)
+    scheduling.cancel(db, e.id, kinds={"quote_follow_up"}, reason="quote accepted")
     b = Booking(
         enquiry_id=e.id,
         quote_id=q.id,

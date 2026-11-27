@@ -238,7 +238,7 @@ def send(db: Session, b: Booking, e: Enquiry, actor: Actor) -> uuid.UUID:
         db,
         "booking.send_contract",
         f"send_contract:{c.id}",
-        {"contract_id": str(c.id), "invoice_id": str(inv.id)},
+        {"contract_id": str(c.id), "invoice_id": str(inv.id), "enquiry_id": str(e.id)},
         aggregate_type="booking",
         aggregate_id=b.id,
     )

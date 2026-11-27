@@ -11,8 +11,10 @@ from app.modules.platform.models import AuditLog, OutboxEvent, SystemSetting
 from app.modules.pricing.models import RateCardRow
 from app.modules.quotes.models import Quote, QuoteLineItem
 from app.modules.replies.models import ReplySuggestion
+from app.modules.scheduling.models import ScheduledEmail
 
 __all__ = [
+    "ScheduledEmail",
     "Payment",
     "Contract",
     "Document",
