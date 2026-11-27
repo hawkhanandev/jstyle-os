@@ -60,6 +60,7 @@ services:
     environment:
       JSTYLE_ENV: local
       JSTYLE_DATABASE_URL: postgresql+psycopg://jstyle:jstyle@postgres:5432/jstyle
+      JSTYLE_PUBLIC_BASE_URL: http://localhost:${JSTYLE_WEB_PORT:-3000}
       JSTYLE_ALLOWED_EMAIL: ${JSTYLE_ALLOWED_EMAIL:-owner@jstyle.local}
       JSTYLE_SMTP_HOST: mailpit
       JSTYLE_SMTP_PORT: "1025"
