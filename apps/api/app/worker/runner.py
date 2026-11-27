@@ -15,7 +15,7 @@ from app.modules.email.send import Skip
 from app.modules.platform import outbox
 from app.modules.platform.audit import SYSTEM, write_audit
 from app.modules.platform.models import OutboxEvent, OutboxStatus
-from app.worker.handlers import HANDLERS, Deps
+from app.worker.handlers import HANDLERS, ON_GIVE_UP, Deps
 
 log = logging.getLogger("jstyle.worker")
 
@@ -39,6 +39,8 @@ def run_event(db: Session, event_id: uuid.UUID, deps: Deps) -> str:
     except Exception as exc:  # noqa: BLE001 - every failure is recorded on the event
         outbox.mark_error(event, exc)
         if event.status in (OutboxStatus.DEAD, OutboxStatus.FAILED):
+            if hook := ON_GIVE_UP.get(event.kind):
+                hook(db, event)
             write_audit(
                 db,
                 SYSTEM,
