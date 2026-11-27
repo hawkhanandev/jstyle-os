@@ -1,0 +1,11 @@
+.env
+.env.*
+!.env.example
+__pycache__/
+.venv/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.hypothesis/
+node_modules/
+.next/
