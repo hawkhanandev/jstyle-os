@@ -20,7 +20,7 @@ from app.modules.auth.deps import (
     client_ip,
     get_google,
 )
-from app.modules.auth.google import GoogleOAuth, new_pkce_pair
+from app.modules.auth.google import GoogleIdentity, GoogleOAuth, new_pkce_pair
 from app.modules.auth.models import UserSession
 from app.modules.auth.service import (
     SignInRejected,
@@ -90,10 +90,15 @@ def google_callback(
 
     res = RedirectResponse(f"{base}/", status_code=302)
     res.delete_cookie(STATE_COOKIE, path="/api/auth")
+    _set_session_cookies(res, settings, new.token, new.csrf_token)
+    return res
+
+
+def _set_session_cookies(res: Response, settings: Settings, token: str, csrf: str) -> None:
     max_age = settings.session_absolute_days * 86400
     res.set_cookie(
         SESSION_COOKIE,
-        new.token,
+        token,
         max_age=max_age,
         httponly=True,
         secure=settings.secure_cookies,
@@ -103,13 +108,40 @@ def google_callback(
     # Readable by the web app, which echoes it in the X-CSRF-Token header.
     res.set_cookie(
         CSRF_COOKIE,
-        new.csrf_token,
+        csrf,
         max_age=max_age,
         httponly=False,
         secure=settings.secure_cookies,
         samesite="lax",
         path="/",
     )
+
+
+def _dev_login_enabled(settings: Settings) -> bool:
+    return settings.env == "local" and bool(settings.allowed_email)
+
+
+@router.get("/config")
+def auth_config(settings: Cfg) -> dict[str, bool]:
+    return {"dev_login": _dev_login_enabled(settings)}
+
+
+@router.post("/dev-login")
+def dev_login(request: Request, db: DB, settings: Cfg) -> RedirectResponse:
+    """Local development only: sign in as the allowed account without Google.
+
+    Refused unless JSTYLE_ENV=local. Staging and production never enable it.
+    """
+    if not _dev_login_enabled(settings):
+        raise HTTPException(404)
+    identity = GoogleIdentity(
+        email=settings.allowed_email.strip().lower(), email_verified=True, name="Local development"
+    )
+    new = complete_sign_in(
+        db, settings, identity, ip=client_ip(request), user_agent=request.headers.get("user-agent")
+    )
+    res = RedirectResponse(f"{settings.public_base_url.rstrip('/')}/", status_code=303)
+    _set_session_cookies(res, settings, new.token, new.csrf_token)
     return res
 
 

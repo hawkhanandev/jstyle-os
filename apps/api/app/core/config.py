@@ -18,6 +18,10 @@ class Settings(BaseSettings):
     # Signs the short-lived OAuth state cookie. Generate with `openssl rand -hex 32`.
     secret_key: str = "dev-only-change-me"
 
+    # Local only: outgoing email goes to Mailpit instead of Gmail (wired up in Phase 3).
+    smtp_host: str = ""
+    smtp_port: int = 1025
+
     session_idle_hours: int = 12
     session_absolute_days: int = 30
 
