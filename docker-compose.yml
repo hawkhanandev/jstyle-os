@@ -51,6 +51,24 @@ services:
       postgres: { condition: service_healthy }
       redis: { condition: service_started }
 
+  # Sends queued emails (to Mailpit locally) and runs scheduled jobs.
+  worker:
+    build: ./apps/api
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      JSTYLE_ENV: local
+      JSTYLE_DATABASE_URL: postgresql+psycopg://jstyle:jstyle@postgres:5432/jstyle
+      JSTYLE_ALLOWED_EMAIL: ${JSTYLE_ALLOWED_EMAIL:-owner@jstyle.local}
+      JSTYLE_SMTP_HOST: mailpit
+      JSTYLE_SMTP_PORT: "1025"
+    command: python -m app.worker
+    volumes: ["./apps/api/app:/app/app"]
+    depends_on:
+      api: { condition: service_started }
+    restart: unless-stopped
+
   web:
     build: ./apps/web
     environment:

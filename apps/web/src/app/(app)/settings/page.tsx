@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { Automations } from "@/components/settings/Automations";
 import { RateCards } from "@/components/settings/RateCards";
+import { Templates } from "@/components/settings/Templates";
 import { api } from "@/lib/api";
 
 type SessionRow = { id: string; device_label: string | null; ip: string | null; last_seen_at: string; current: boolean };
@@ -25,9 +27,11 @@ export default function SettingsPage() {
   return (
     <div className="max-w-4xl">
       <h1 className="font-serif text-2xl text-stone-900">Settings</h1>
-      <p className="mt-1 text-stone-600">Templates and business details arrive with Phases 3 to 5.</p>
-      <div className="mt-8">
+      <p className="mt-1 text-stone-600">Business details arrive with Phase 5.</p>
+      <div className="mt-8 space-y-8">
         <RateCards />
+        <Templates />
+        <Automations />
       </div>
       <section className="mt-8 rounded-lg border border-stone-200 bg-white">
         <div className="flex items-center justify-between border-b border-stone-200 px-5 py-3">
