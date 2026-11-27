@@ -22,3 +22,5 @@
 | Marking a contract signed is audited, stores the evidence and re-runs the gate | `test_full_contract_flow_to_booked` | Done |
 | Invoice numbers are yearly and never repeat | `test_invoice_numbers_are_yearly_and_sequential` | Done |
 | A failed contract email leaves the pipeline unchanged | `test_failed_send_returns_contract_to_prepared` | Done |
+| BOOKED only with a signed contract and a verified deposit | `test_booked_only_with_signed_contract_and_verified_deposit` | Done |
+| Payments count only once verified; voiding after booking raises a task instead of un-booking | `test_partial_and_rejected_payments` | Done |
