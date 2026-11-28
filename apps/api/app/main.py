@@ -13,6 +13,7 @@ from app.modules.bookings.routes import router as bookings_router
 from app.modules.documents.routes import router as documents_router
 from app.modules.email.routes import router as email_router
 from app.modules.enquiries.routes import router as enquiries_router
+from app.modules.forms.routes import layouts as form_layouts
 from app.modules.forms.routes import public as forms_public
 from app.modules.forms.routes import staff as forms_staff
 from app.modules.google.routes import router as google_router
@@ -81,4 +82,5 @@ api.include_router(operations_router)
 api.include_router(google_router)
 api.include_router(forms_public)
 api.include_router(forms_staff)
+api.include_router(form_layouts)
 app.include_router(api)

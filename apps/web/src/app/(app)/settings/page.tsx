@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Automations } from "@/components/settings/Automations";
 import { Business } from "@/components/settings/Business";
+import { FormsEditor } from "@/components/settings/FormsEditor";
 import { GoogleAccount } from "@/components/settings/GoogleAccount";
 import { RateCards } from "@/components/settings/RateCards";
 import { Templates } from "@/components/settings/Templates";
@@ -32,6 +33,7 @@ export default function SettingsPage() {
       <div className="mt-8 space-y-8">
         <GoogleAccount />
         <Business />
+        <FormsEditor />
         <RateCards />
         <Templates />
         <Automations />

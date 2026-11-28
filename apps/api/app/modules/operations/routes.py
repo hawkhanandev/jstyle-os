@@ -12,7 +12,7 @@ from sqlalchemy.orm import Session
 from app.core.db import get_session, utcnow
 from app.modules.auth.deps import Account
 from app.modules.bookings.models import Booking, BookingStatus
-from app.modules.enquiries.models import Enquiry, Pipeline, Task
+from app.modules.enquiries.models import CLOSED, Enquiry, Pipeline, Task
 from app.modules.forms.models import FormSubmission
 from app.modules.operations import service
 from app.modules.operations.models import Trial, TrialStatus
@@ -171,6 +171,58 @@ def _count(db: Session, q: Any) -> int:
     return int(db.scalar(select(func.count()).select_from(q.subquery())) or 0)
 
 
+_OPEN_PIPELINE = [p for p in Pipeline if p not in (Pipeline.BOOKED, *CLOSED)]
+
+
+def _region_summary(db: Session, region: str, today: date) -> dict[str, Any]:
+    """Headline figures for one location: what's coming in, what's booked, what's owed."""
+    in_region = Enquiry.region == region
+    booked = db.execute(
+        select(Booking, Enquiry.wedding_date)
+        .join(Enquiry, Enquiry.id == Booking.enquiry_id)
+        .where(in_region, Booking.status == BookingStatus.BOOKED)
+    ).all()
+    upcoming = [(b, d) for b, d in booked if d is not None and d >= today]
+    next_wedding = db.execute(
+        select(Enquiry.id, Enquiry.client_name, Enquiry.wedding_date)
+        .join(Booking, Booking.enquiry_id == Enquiry.id)
+        .where(in_region, Booking.status == BookingStatus.BOOKED, Enquiry.wedding_date >= today)
+        .order_by(Enquiry.wedding_date)
+        .limit(1)
+    ).first()
+    return {
+        "open_enquiries": _count(
+            db, select(Enquiry.id).where(in_region, Enquiry.pipeline_status.in_(_OPEN_PIPELINE))
+        ),
+        "new_this_month": _count(
+            db,
+            select(Enquiry.id).where(
+                in_region, Enquiry.created_at >= datetime(today.year, today.month, 1, tzinfo=UTC)
+            ),
+        ),
+        "quotes_with_clients": _count(
+            db,
+            select(Enquiry.id).where(
+                in_region,
+                Enquiry.pipeline_status.in_([Pipeline.QUOTE_SENT, Pipeline.DISCUSSION_REVISION]),
+            ),
+        ),
+        "upcoming_weddings": len(upcoming),
+        "booked_this_year": sum(1 for _, d in booked if d and today.year == d.year),
+        "booked_value_cents": sum(b.total_cents for b, _ in upcoming),
+        "outstanding_cents": sum(service.outstanding(db, b) for b, _ in upcoming),
+        "next_wedding": (
+            {
+                "enquiry_id": next_wedding.id,
+                "client_name": next_wedding.client_name,
+                "date": next_wedding.wedding_date,
+            }
+            if next_wedding
+            else None
+        ),
+    }
+
+
 @router.get("/dashboard")
 def dashboard(account: Account, db: DB) -> dict[str, Any]:
     today = utcnow().date()
@@ -178,7 +230,13 @@ def dashboard(account: Account, db: DB) -> dict[str, Any]:
     for b in db.scalars(select(Booking).where(Booking.status == BookingStatus.BOOKED)):
         outstanding += service.outstanding(db, b)
     upcoming = db.execute(
-        select(Enquiry.id, Enquiry.client_name, Enquiry.wedding_date, Enquiry.venue_name)
+        select(
+            Enquiry.id,
+            Enquiry.client_name,
+            Enquiry.wedding_date,
+            Enquiry.venue_name,
+            Enquiry.region,
+        )
         .join(Booking, Booking.enquiry_id == Enquiry.id)
         .where(Booking.status == BookingStatus.BOOKED, Enquiry.wedding_date >= today)
         .order_by(Enquiry.wedding_date)
@@ -228,9 +286,11 @@ def dashboard(account: Account, db: DB) -> dict[str, Any]:
                 "client_name": r.client_name,
                 "date": r.wedding_date,
                 "venue": r.venue_name,
+                "region": r.region,
             }
             for r in upcoming
         ],
+        "regions": {region: _region_summary(db, region, today) for region in ("HI", "OR")},
         "open_tasks": [
             {
                 "id": t.id,

@@ -6,6 +6,7 @@ export const NAV: { section: string; items: NavItem[] }[] = [
     section: "Overview",
     items: [
       { href: "/", label: "Dashboard", phase: 1, summary: "Counts, upcoming weddings and trials, open tasks." },
+      { href: "/enquiries", label: "Enquiries", phase: 2, summary: "Every enquiry in one list, by location and status." },
       { href: "/inbox", label: "Inbox", phase: 3, summary: "Conversations with brides and planners only." },
       { href: "/pipeline", label: "Pipeline", phase: 2, summary: "Every enquiry by commercial status." },
     ],
