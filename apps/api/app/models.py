@@ -6,6 +6,7 @@ from app.modules.documents.models import Contract, Document, Invoice, InvoiceCou
 from app.modules.email.models import EmailMessage, EmailTemplate, EmailThread
 from app.modules.enquiries.models import Enquiry, PipelineHistory, PlannerCompany, Task
 from app.modules.forms.models import FormSubmission
+from app.modules.google.models import CalendarEvent, GoogleConnection
 from app.modules.operations.models import Trial, WeddingPlan
 from app.modules.payments.models import Payment
 from app.modules.platform.models import AuditLog, OutboxEvent, SystemSetting
@@ -15,6 +16,8 @@ from app.modules.replies.models import ReplySuggestion
 from app.modules.scheduling.models import ScheduledEmail
 
 __all__ = [
+    "CalendarEvent",
+    "GoogleConnection",
     "Trial",
     "WeddingPlan",
     "ScheduledEmail",

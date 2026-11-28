@@ -13,6 +13,7 @@ from sqlalchemy.orm import Session
 from app.core.db import utcnow
 from app.modules.bookings.models import Booking, BookingStatus
 from app.modules.enquiries.models import Enquiry
+from app.modules.google.events import calendar_changed
 from app.modules.operations.models import Trial, TrialStatus, WeddingPlan
 from app.modules.payments.models import Payment, PaymentStatus
 from app.modules.platform import outbox
@@ -52,6 +53,7 @@ def schedule_booking_emails(
 ) -> int:
     """(Re)schedule every booking email from the wedding date. Safe to call repeatedly."""
     now = now or utcnow()
+    calendar_changed(db, e.id)
     scheduling.cancel(db, e.id, kinds=BOOKING_KINDS, reason="rescheduled")
     if e.wedding_date is None or b.status != BookingStatus.BOOKED:
         return 0
@@ -119,6 +121,7 @@ def save_trial(
     t.starts_at, t.location, t.status, t.notes = starts_at, location, status.value, notes
     db.flush()
     schedule_trial_reminder(db, t, e)
+    calendar_changed(db, e.id)
     write_audit(
         db,
         actor,

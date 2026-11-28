@@ -17,6 +17,7 @@ dependencies = [
   "nh3>=0.3.8",
   "weasyprint>=70.0",
   "python-multipart>=0.0.34",
+  "cryptography>=44",
 ]
 
 [dependency-groups]

@@ -116,3 +116,26 @@ has a **Send now (test)** button that sends it on the worker's next run instead 
 - Back up and restore with `scripts/backup-local.sh` and `scripts/restore-local.sh`; see
   [runbooks/backup-restore.md](runbooks/backup-restore.md).
 - The full journey to test before going live is in [uat.md](uat.md).
+
+## Connecting a Gmail account (optional)
+
+1. Put the Google OAuth client in `.env` next to `docker-compose.yml`:
+   ```bash
+   JSTYLE_GOOGLE_CLIENT_ID=...
+   JSTYLE_GOOGLE_CLIENT_SECRET=...
+   ```
+   The client must allow the redirect URI `http://localhost:3000/api/integrations/google/callback`,
+   and the Gmail address must be a test user on the OAuth consent screen.
+2. `docker compose up --build`, sign in with **Local sign-in**, open **Settings → Google account**
+   and click **Connect Google account**. Sign in as the Gmail account and leave every box ticked.
+   Google warns that the app isn't verified; that's expected for a test app.
+3. The worker checks Gmail every minute (or click **Check Gmail now**). Only emails from people who
+   already have an enquiry are added to the Inbox; everything else is left alone. The CRM never
+   deletes or changes anything in Gmail.
+4. **Send emails from this account** is off at first, so emails keep landing in Mailpit. Switch it
+   on to send real emails from the Gmail address. Use a test enquiry with your own email address.
+5. **Add booked weddings and trials to this calendar** creates all-day wedding events and two-hour
+   trial events in the account's main calendar, moves them when dates change and removes them when
+   a wedding is cancelled.
+
+Disconnecting from Settings revokes the CRM's access at Google.

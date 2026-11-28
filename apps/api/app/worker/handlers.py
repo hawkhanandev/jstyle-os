@@ -16,6 +16,8 @@ from app.modules.email import templates
 from app.modules.email.mailer import Attachment, Mailer
 from app.modules.email.send import Skip, base_context, deliver, long_date, send_rendered
 from app.modules.enquiries.models import Enquiry
+from app.modules.google import service as google
+from app.modules.google.client import GoogleApi
 from app.modules.operations import service as operations
 from app.modules.platform import settings
 from app.modules.platform.audit import SYSTEM
@@ -30,6 +32,7 @@ from app.modules.quotes.service import money
 class Deps:
     settings: Settings
     mailer: Mailer
+    google: GoogleApi | None = None
 
 
 Handler = Callable[[Session, OutboxEvent, Deps], None]
@@ -201,12 +204,22 @@ def quote_send_failed(db: Session, event: OutboxEvent) -> None:
         quotes.mark_send_failed(db, q, event.last_error or "send failed")
 
 
+def calendar_sync(db: Session, event: OutboxEvent, deps: Deps) -> None:
+    if deps.google is None:
+        raise Skip("Google is not configured")
+    conn = google.current(db)
+    if conn is None or not conn.calendar_enabled:
+        raise Skip("calendar sync is off")
+    google.sync_calendar(db, deps.google, deps.settings, uuid.UUID(event.payload["enquiry_id"]))
+
+
 HANDLERS: dict[str, Handler] = {
     "email.send": email_send,
     "email.reply": email_reply,
     "quote.send": quote_send,
     "booking.send_contract": booking_send_contract,
     "booking.document_email": booking_document_email,
+    "calendar.sync": calendar_sync,
 }
 
 # Called when an event ends in failed or dead, so the business record shows the failure.
