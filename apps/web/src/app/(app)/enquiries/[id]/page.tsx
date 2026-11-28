@@ -12,6 +12,7 @@ import { BookingPanel } from "@/components/bookings/BookingPanel";
 import { ContractTab } from "@/components/paperwork/ContractTab";
 import { InvoicesTab } from "@/components/paperwork/InvoicesTab";
 import { PaymentsTab } from "@/components/payments/PaymentsTab";
+import { ScheduledList } from "@/components/ScheduledList";
 
 type Line = { kind: string; description: string; quantity: number; unit_cents: number; amount_cents: number };
 type Price = {
@@ -80,6 +81,18 @@ export default function EnquiryPage() {
     }
   }
 
+  async function cancelWedding() {
+    const reason = window.prompt("Cancel this wedding? Every scheduled email stops and unpaid invoices are voided. Reason:");
+    if (!reason) return;
+    setError("");
+    try {
+      await api(`/enquiries/${id}/cancel-wedding`, { method: "POST", body: JSON.stringify({ reason }) });
+      await load();
+    } catch (err) {
+      setError(err instanceof ApiError ? err.message : "Could not cancel.");
+    }
+  }
+
   if (!e) return <p className="text-stone-500">{error || "Loading…"}</p>;
   const closed = ["LOST_DECLINED", "EXPIRED", "CANCELLED"].includes(e.pipeline_status);
 
@@ -102,7 +115,11 @@ export default function EnquiryPage() {
           {["UNDER_REVIEW"].includes(e.pipeline_status) && <Btn onClick={() => act("request-info", true)}>Request info</Btn>}
           {e.pipeline_status === "NEEDS_INFORMATION" && <Btn onClick={() => act("reopen")}>Back to review</Btn>}
           {["QUOTE_SENT", "DISCUSSION_REVISION"].includes(e.pipeline_status) && <Btn onClick={() => act("mark-expired", true)}>Mark expired</Btn>}
-          {!closed && <Btn onClick={() => act("mark-lost", true)}>Mark lost</Btn>}
+          {["QUOTE_ACCEPTED", "CONTRACT_DEPOSIT_PENDING", "BOOKED"].includes(e.pipeline_status) ? (
+            <Btn onClick={cancelWedding}>Cancel wedding</Btn>
+          ) : (
+            !closed && <Btn onClick={() => act("mark-lost", true)}>Mark lost</Btn>
+          )}
           {closed && e.pipeline_status !== "CANCELLED" && <Btn onClick={() => act("reopen")}>Reopen</Btn>}
         </div>
       </div>
@@ -237,6 +254,7 @@ export default function EnquiryPage() {
         </div>
       )}
 
+      {tab === "Activity" && <ScheduledList enquiryId={e.id} stamp={e.pipeline_status} />}
       {tab === "Activity" && (
         <ul className="mt-6 space-y-2 text-sm">
           {e.history.length === 0 && <li className="text-stone-500">No status changes yet.</li>}

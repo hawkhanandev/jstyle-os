@@ -24,3 +24,6 @@
 | A failed contract email leaves the pipeline unchanged | `test_failed_send_returns_contract_to_prepared` | Done |
 | BOOKED only with a signed contract and a verified deposit | `test_booked_only_with_signed_contract_and_verified_deposit` | Done |
 | Payments count only once verified; voiding after booking raises a task instead of un-booking | `test_partial_and_rejected_payments` | Done |
+| Scheduled emails go out at the right local time and are re-checked when due | `test_follow_up_is_sent_at_10am_local_five_days_later`, `test_follow_up_skipped_when_client_replied`, `test_local_time_conversion` | Done |
+| Cancelling a wedding stops every pending email | `test_cancel_wedding_stops_everything` | Done |
+| Overdue deposits raise a task | `test_overdue_deposit_raises_one_task` | Done |

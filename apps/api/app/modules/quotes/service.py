@@ -33,6 +33,7 @@ from app.modules.pricing.types import (
     TravelZone,
 )
 from app.modules.quotes.models import Quote, QuoteLineItem, QuoteStatus
+from app.modules.scheduling import service as scheduling
 
 # Flags that also live on the enquiry and must be acknowledged before submitting.
 ENQUIRY_FLAGS_TO_ACK = {"date_in_past", "date_under_14_days"}
@@ -370,6 +371,7 @@ def mark_sent(db: Session, q: Quote, email_message_id: uuid.UUID, actor: Actor) 
     if Pipeline(e.pipeline_status) == Pipeline.AWAITING_APPROVAL:
         transition(db, e, Pipeline.QUOTE_SENT, actor)
     write_audit(db, actor, "quote.sent", entity_type="quote", entity_id=q.id)
+    scheduling.schedule_quote_follow_up(db, q, e)
 
 
 def mark_send_failed(db: Session, q: Quote, error: str) -> None:

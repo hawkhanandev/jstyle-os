@@ -8,13 +8,16 @@ from __future__ import annotations
 import logging
 import time
 import uuid
+from datetime import date
 
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.core.db import utcnow
 from app.modules.email.send import Skip
 from app.modules.platform import outbox
 from app.modules.platform.audit import SYSTEM, write_audit
 from app.modules.platform.models import OutboxEvent, OutboxStatus
+from app.modules.scheduling import service as scheduling
 from app.worker.handlers import HANDLERS, ON_GIVE_UP, Deps
 
 log = logging.getLogger("jstyle.worker")
@@ -55,7 +58,17 @@ def run_event(db: Session, event_id: uuid.UUID, deps: Deps) -> str:
     return result
 
 
+_last_daily: list[date] = []
+
+
 def tick(factory: sessionmaker[Session], deps: Deps, batch: int = 10) -> int:
+    with factory() as db:
+        scheduling.dispatch_due(db)
+        today = utcnow().date()
+        if not _last_daily or _last_daily[-1] != today:
+            scheduling.daily_checks(db, today)
+            _last_daily[:] = [today]
+        db.commit()
     with factory() as db:
         ids = [e.id for e in outbox.claim_due(db, limit=batch)]
         db.commit()

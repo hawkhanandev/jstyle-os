@@ -5,13 +5,16 @@ from typing import Annotated, Any
 
 from fastapi import APIRouter, Depends, HTTPException
 from pydantic import BaseModel, Field
+from sqlalchemy import select
 from sqlalchemy.orm import Session
 
 from app.core.db import get_session
 from app.modules.auth.deps import Account
-from app.modules.bookings import service
+from app.modules.bookings import cancel, service
 from app.modules.enquiries.models import Enquiry
 from app.modules.quotes.models import Quote
+from app.modules.scheduling import service as scheduling
+from app.modules.scheduling.models import ScheduledEmail
 
 router = APIRouter(tags=["bookings"])
 DB = Annotated[Session, Depends(get_session)]
@@ -62,3 +65,31 @@ def update_booking(
     service.set_stylists(db, b, e, body.stylists_required, account.actor)
     db.commit()
     return service.to_dict(db, b, e)
+
+
+class CancelIn(BaseModel):
+    reason: str = Field(min_length=1, max_length=2000)
+
+
+@router.post("/enquiries/{enquiry_id}/cancel-wedding")
+def cancel_wedding(
+    enquiry_id: uuid.UUID, body: CancelIn, account: Account, db: DB
+) -> dict[str, int]:
+    e = _enquiry(db, enquiry_id)
+    try:
+        result = cancel.cancel_wedding(db, e, body.reason, account.actor)
+    except cancel.CancelError as exc:
+        db.rollback()
+        raise HTTPException(409, detail={"code": exc.code, "message": str(exc)}) from exc
+    db.commit()
+    return result
+
+
+@router.get("/enquiries/{enquiry_id}/scheduled-emails")
+def scheduled_emails(enquiry_id: uuid.UUID, account: Account, db: DB) -> list[dict[str, Any]]:
+    rows = db.scalars(
+        select(ScheduledEmail)
+        .where(ScheduledEmail.enquiry_id == enquiry_id)
+        .order_by(ScheduledEmail.send_at.desc())
+    )
+    return [scheduling.to_dict(s) for s in rows]

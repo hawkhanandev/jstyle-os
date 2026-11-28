@@ -73,6 +73,8 @@ def deliver(db: Session, event: OutboxEvent, mailer: Mailer, settings: Settings)
     if enquiry is None:
         raise PermanentError("enquiry not found")
     key = payload["template"]
+    if Pipeline(enquiry.pipeline_status) == Pipeline.CANCELLED:
+        raise Skip("wedding cancelled")
     if key == "enquiry_ack":
         if Pipeline(enquiry.pipeline_status) in CLOSED:
             raise Skip("enquiry closed before the acknowledgement was sent")
