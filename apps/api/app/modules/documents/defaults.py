@@ -20,3 +20,13 @@ PLANNER_TERMS = (
     )
     + "<p>When booked through a planner, the planner is our point of contact for timeline and headcount.</p>"
 )
+
+PREP_GUIDE = """<p class="draft">DRAFT GUIDE: to be reviewed and replaced by Jessica in Settings before use.</p>
+<ul>
+<li>Wash your hair the night before (no conditioner at the roots) and arrive with it completely dry.</li>
+<li>Come with a clean, moisturised face and no makeup.</li>
+<li>Set up the getting-ready room near a window with a table, two chairs and an outlet.</li>
+<li>Wear a button-up or zip-up top so you can change without disturbing your hair and makeup.</li>
+<li>Have everyone ready at their start time on the final timeline; it's sent once the balance is paid.</li>
+<li>Tell us about any allergies or skin sensitivities before the day.</li>
+</ul>"""

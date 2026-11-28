@@ -7,7 +7,7 @@ from typing import Any
 
 from sqlalchemy.orm import Session
 
-from app.modules.documents.defaults import BRIDE_TERMS, PLANNER_TERMS
+from app.modules.documents.defaults import BRIDE_TERMS, PLANNER_TERMS, PREP_GUIDE
 from app.modules.platform.audit import Actor, write_audit
 from app.modules.platform.models import SystemSetting
 
@@ -26,6 +26,7 @@ DEFAULT_SETTINGS: dict[str, Any] = {
     "deposit_due_days": 7,
     "balance_due_hours": 48,
     "contract_terms": {"bride": BRIDE_TERMS, "planner": PLANNER_TERMS},
+    "prep_guide_html": PREP_GUIDE,
     "quote_follow_up_days": 5,
 }
 

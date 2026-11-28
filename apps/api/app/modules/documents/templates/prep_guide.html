@@ -1,0 +1,24 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style>{{ css }}</style></head>
+<body>
+{% with title = "Wedding preparation guide" %}{% include "_header.html" %}{% endwith %}
+
+<div class="grid" style="margin-top:18px">
+  <div>
+    <h2>Your wedding</h2>
+    {{ client.name }}<br>{{ wedding.date }}<br>{{ wedding.venue }}{% if wedding.address %}<br>{{ wedding.address }}{% endif %}
+  </div>
+  <div>
+    <h2>Getting ready</h2>
+    {{ getting_ready or "Please send us the getting-ready address." }}
+  </div>
+</div>
+
+<h2>Services booked</h2>
+<table>
+  {% for l in lines %}<tr><td>{{ l.description }}</td><td class="num">{{ l.quantity }}</td></tr>{% endfor %}
+</table>
+
+<h2>Before the day</h2>
+<div class="terms">{{ guide_html | safe }}</div>
+</body></html>

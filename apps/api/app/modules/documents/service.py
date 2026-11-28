@@ -226,6 +226,89 @@ def prepare(db: Session, b: Booking, e: Enquiry, actor: Actor, today: date | Non
     )
 
 
+def issue_balance_invoice(
+    db: Session, b: Booking, e: Enquiry, amount_cents: int, today: date
+) -> Invoice:
+    """Create (or reuse) the balance invoice for what is still owed, issued now."""
+    existing = db.scalar(
+        select(Invoice).where(
+            Invoice.booking_id == b.id,
+            Invoice.kind == InvoiceKind.BALANCE,
+            Invoice.status.in_([InvoiceStatus.ISSUED, InvoiceStatus.PREPARED]),
+            Invoice.amount_cents == amount_cents,
+        )
+    )
+    if existing is not None:
+        existing.status = InvoiceStatus.ISSUED
+        existing.issued_at = existing.issued_at or utcnow()
+        return existing
+    hours = int(settings.get(db, "balance_due_hours") or 48)
+    due = (e.wedding_date or today) - timedelta(days=max(1, -(-hours // 24)))
+    number = next_invoice_number(db, today.year)
+    ctx = _context(db, b, e)
+    data = pdf.html_to_pdf(
+        pdf.render_html(
+            "invoice.html",
+            ctx
+            | {
+                "number": number,
+                "issued": long_date(today),
+                "due": long_date(due),
+                "heading": "Balance",
+                "lines": [
+                    {
+                        "description": f"Remaining balance for {long_date(e.wedding_date)}",
+                        "amount": money(amount_cents),
+                    }
+                ],
+                "amount": money(amount_cents),
+            },
+        )
+    )
+    doc = storage.store(
+        db,
+        kind="invoice",
+        filename=f"Jstyle invoice {number}.pdf",
+        data=data,
+        content_type="application/pdf",
+        enquiry_id=e.id,
+    )
+    inv = Invoice(
+        number=number,
+        booking_id=b.id,
+        enquiry_id=e.id,
+        kind=InvoiceKind.BALANCE,
+        amount_cents=amount_cents,
+        due_on=due,
+        status=InvoiceStatus.ISSUED,
+        document_id=doc.id,
+        issued_at=utcnow(),
+    )
+    db.add(inv)
+    db.flush()
+    return inv
+
+
+def booking_pdf(
+    db: Session,
+    b: Booking,
+    e: Enquiry,
+    template: str,
+    kind: str,
+    filename: str,
+    extra: dict[str, Any],
+) -> Document:
+    data = pdf.html_to_pdf(pdf.render_html(template, _context(db, b, e) | extra))
+    return storage.store(
+        db,
+        kind=kind,
+        filename=filename,
+        data=data,
+        content_type="application/pdf",
+        enquiry_id=e.id,
+    )
+
+
 def send(db: Session, b: Booking, e: Enquiry, actor: Actor) -> uuid.UUID:
     c = _active_contract(db, b)
     inv = _active_deposit(db, b)

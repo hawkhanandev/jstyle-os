@@ -14,6 +14,7 @@ from app.modules.enquiries.routes import router as enquiries_router
 from app.modules.forms.routes import public as forms_public
 from app.modules.forms.routes import staff as forms_staff
 from app.modules.inbox.routes import router as inbox_router
+from app.modules.operations.routes import router as operations_router
 from app.modules.payments.routes import router as payments_router
 from app.modules.platform.routes import router as settings_router
 from app.modules.pricing.routes import router as pricing_router
@@ -56,6 +57,7 @@ api.include_router(bookings_router)
 api.include_router(documents_router)
 api.include_router(settings_router)
 api.include_router(payments_router)
+api.include_router(operations_router)
 api.include_router(forms_public)
 api.include_router(forms_staff)
 app.include_router(api)

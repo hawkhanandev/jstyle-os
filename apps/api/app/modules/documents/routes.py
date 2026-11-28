@@ -129,6 +129,32 @@ def list_invoices(account: Account, db: DB, status: str | None = None) -> list[d
     return [service.invoice_dict(db, i) for i in db.scalars(q)]
 
 
+@router.get("/documents")
+def list_documents(
+    account: Account, db: DB, enquiry_id: uuid.UUID | None = None
+) -> list[dict[str, Any]]:
+    q = (
+        select(Document, Enquiry.client_name)
+        .outerjoin(Enquiry, Enquiry.id == Document.enquiry_id)
+        .order_by(Document.created_at.desc())
+        .limit(300)
+    )
+    if enquiry_id:
+        q = q.where(Document.enquiry_id == enquiry_id)
+    return [
+        {
+            "id": d.id,
+            "kind": d.kind,
+            "filename": d.filename,
+            "size_bytes": d.size_bytes,
+            "enquiry_id": d.enquiry_id,
+            "client_name": name,
+            "created_at": d.created_at,
+        }
+        for d, name in db.execute(q).all()
+    ]
+
+
 @router.get("/documents/{doc_id}")
 def download(doc_id: uuid.UUID, account: Account, db: DB, download: bool = False) -> Response:
     doc = db.get(Document, doc_id)

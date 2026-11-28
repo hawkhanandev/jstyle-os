@@ -47,6 +47,7 @@ def get_all(account: Account, db: DB) -> dict[str, Any]:
         "business": settings.get(db, "business"),
         "payment_instructions": settings.get(db, "payment_instructions"),
         "contract_terms": settings.get(db, "contract_terms"),
+        "prep_guide_html": settings.get(db, "prep_guide_html"),
         "scheduling": {
             "deposit_due_days": settings.get(db, "deposit_due_days"),
             "balance_due_hours": settings.get(db, "balance_due_hours"),
@@ -85,5 +86,17 @@ def put_terms(body: TermsIn, account: Account, db: DB) -> dict[str, Any]:
 def put_scheduling(body: SchedulingIn, account: Account, db: DB) -> dict[str, Any]:
     settings.put(db, "deposit_due_days", body.deposit_due_days, account.actor)
     settings.put(db, "balance_due_hours", body.balance_due_hours, account.actor)
+    db.commit()
+    return get_all(account, db)
+
+
+class PrepGuideIn(BaseModel):
+    html: str = Field(min_length=1, max_length=50000)
+
+
+@router.put("/prep-guide")
+def put_prep_guide(body: PrepGuideIn, account: Account, db: DB) -> dict[str, Any]:
+    clean = nh3.clean(body.html, tags=TERMS_TAGS, attributes={"p": {"class"}, "span": {"class"}})
+    settings.put(db, "prep_guide_html", clean, account.actor)
     db.commit()
     return get_all(account, db)
