@@ -27,3 +27,6 @@
 | Scheduled emails go out at the right local time and are re-checked when due | `test_follow_up_is_sent_at_10am_local_five_days_later`, `test_follow_up_skipped_when_client_replied`, `test_local_time_conversion` | Done |
 | Cancelling a wedding stops every pending email | `test_cancel_wedding_stops_everything` | Done |
 | Overdue deposits raise a task | `test_overdue_deposit_raises_one_task` | Done |
+| A booking runs from BOOKED to completed with every email at the right local time | `test_booking_schedules_every_wedding_email`, `test_last_minute_booking_sends_prep_guide_now`, `test_trial_reminder_two_days_before` | Done |
+| The final timeline is only sent once the balance is paid in full | `test_final_timeline_waits_for_full_payment` | Done |
+| Moving the wedding date moves every scheduled email | `test_booking_schedules_every_wedding_email` | Done |

@@ -12,6 +12,7 @@ from app.core.db import utcnow
 from app.modules.bookings.models import Booking, BookingStatus
 from app.modules.enquiries.models import Enquiry, Pipeline
 from app.modules.enquiries.pipeline import transition
+from app.modules.operations import service as operations
 from app.modules.platform import outbox
 from app.modules.platform.audit import Actor, write_audit
 from app.modules.quotes import service as quotes
@@ -116,6 +117,7 @@ def try_book(db: Session, b: Booking, e: Enquiry, actor: Actor) -> list[str]:
         aggregate_type="booking",
         aggregate_id=b.id,
     )
+    operations.schedule_booking_emails(db, b, e)
     return []
 
 

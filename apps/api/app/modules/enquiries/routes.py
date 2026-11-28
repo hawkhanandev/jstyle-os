@@ -145,8 +145,22 @@ def patch_enquiry(
         before=before,
         after=changes,
     )
+    if {"wedding_date", "region"} & changes.keys():
+        db.flush()
+        db.refresh(e)
+        _reschedule(db, e)
     db.commit()
     return EnquiryOut.model_validate(e)
+
+
+def _reschedule(db: Session, e: Enquiry) -> None:
+    """A booked wedding moved: every booking email follows the new date."""
+    from app.modules.bookings.models import Booking
+    from app.modules.operations.service import schedule_booking_emails
+
+    b = db.scalar(select(Booking).where(Booking.enquiry_id == e.id))
+    if b is not None:
+        schedule_booking_emails(db, b, e)
 
 
 def _jsonable(v: Any) -> Any:

@@ -7,6 +7,7 @@ type AllSettings = {
   business: { name: string; legal_name: string; address: string; email: string; phone: string };
   payment_instructions: { venmo: string; zelle: string };
   contract_terms: { bride: string; planner: string };
+  prep_guide_html: string;
   scheduling: { deposit_due_days: number; balance_due_hours: number };
 };
 
@@ -104,6 +105,20 @@ export function Business() {
           <label>
             <span className="text-stone-600">Planner contracts</span>
             <textarea name="planner" rows={10} defaultValue={s.contract_terms.planner} className="mt-1 w-full rounded-md border border-stone-300 px-2 py-1.5 font-mono text-xs" />
+          </label>
+          <Save />
+        </form>
+
+        <form
+          onSubmit={(ev) => {
+            ev.preventDefault();
+            save("prep-guide", { html: new FormData(ev.currentTarget).get("html") });
+          }}
+          className="grid gap-3 border-t border-stone-100 pt-6"
+        >
+          <label>
+            <span className="text-stone-600">Preparation guide (sent as a PDF 14 days before the wedding)</span>
+            <textarea name="html" rows={8} defaultValue={s.prep_guide_html} className="mt-1 w-full rounded-md border border-stone-300 px-2 py-1.5 font-mono text-xs" />
           </label>
           <Save />
         </form>

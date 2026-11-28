@@ -12,13 +12,16 @@ from datetime import date, datetime, time, timedelta
 from typing import Any
 from zoneinfo import ZoneInfo
 
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.core.db import utcnow
+from app.modules.bookings.models import Booking, BookingStatus
 from app.modules.documents.models import Invoice, InvoiceStatus
 from app.modules.email.models import EmailMessage, EmailThread
 from app.modules.enquiries.models import CLOSED, Enquiry, Pipeline, Task
+from app.modules.operations.models import Trial, TrialStatus, WeddingPlan
+from app.modules.payments.models import Payment, PaymentStatus
 from app.modules.platform import outbox, settings
 from app.modules.platform.audit import Actor, write_audit
 from app.modules.quotes.models import Quote, QuoteStatus
@@ -122,9 +125,94 @@ def _check_quote_follow_up(db: Session, s: ScheduledEmail, e: Enquiry, now: date
     return None
 
 
+def _booking(db: Session, s: ScheduledEmail) -> Booking | None:
+    return db.scalar(select(Booking).where(Booking.enquiry_id == s.enquiry_id))
+
+
+def _outstanding(db: Session, b: Booking) -> int:
+    paid = db.scalar(
+        select(func.coalesce(func.sum(Payment.amount_cents), 0)).where(
+            Payment.booking_id == b.id, Payment.status == PaymentStatus.VERIFIED
+        )
+    )
+    return max(b.total_cents - int(paid or 0), 0)
+
+
+def _task(db: Session, e: Enquiry, kind: str, title: str) -> None:
+    db.add(Task(entity_type="enquiry", entity_id=e.id, kind=kind, title=title, due_at=utcnow()))
+
+
+def _check_booked(db: Session, s: ScheduledEmail, e: Enquiry, now: datetime) -> str | None:
+    b = _booking(db, s)
+    if b is None or b.status != BookingStatus.BOOKED:
+        return "booking isn't confirmed"
+    return None
+
+
+def _check_balance(db: Session, s: ScheduledEmail, e: Enquiry, now: datetime) -> str | None:
+    b = _booking(db, s)
+    if b is None or b.status != BookingStatus.BOOKED:
+        return "booking isn't confirmed"
+    if _outstanding(db, b) == 0:
+        return "balance already paid"
+    return None
+
+
+def _check_final_timeline(db: Session, s: ScheduledEmail, e: Enquiry, now: datetime) -> str | None:
+    b = _booking(db, s)
+    if b is None or b.status != BookingStatus.BOOKED:
+        return "booking isn't confirmed"
+    plan = db.scalar(select(WeddingPlan).where(WeddingPlan.booking_id == b.id))
+    if plan is not None and plan.final_timeline_sent_at is not None:
+        return "already sent"
+    if _outstanding(db, b) > 0:
+        _task(
+            db,
+            e,
+            "final_timeline_blocked",
+            f"Final timeline for {e.client_name} waits on the balance",
+        )
+        return "balance not paid in full"
+    if plan is None or not plan.timeline:
+        _task(db, e, "final_timeline_blocked", f"Add the day-of timeline for {e.client_name}")
+        return "no timeline entered"
+    return None
+
+
+def _check_trial(db: Session, s: ScheduledEmail, e: Enquiry, now: datetime) -> str | None:
+    t = db.get(Trial, s.ref_id) if s.ref_id else None
+    if t is None or t.status != TrialStatus.SCHEDULED:
+        return "trial no longer scheduled"
+    if t.starts_at < now:
+        return "trial already happened"
+    return None
+
+
 CHECKS: dict[str, Callable[[Session, ScheduledEmail, Enquiry, datetime], str | None]] = {
     "quote_follow_up": _check_quote_follow_up,
+    "prep_guide": _check_booked,
+    "balance_reminder": _check_balance,
+    "final_timeline": _check_final_timeline,
+    "thank_you_review": _check_booked,
+    "trial_reminder": _check_trial,
 }
+
+# Kinds that carry a generated PDF go through the document handler.
+DOCUMENT_KINDS = {
+    "prep_guide": "prep_guide",
+    "balance_reminder": "balance_invoice",
+    "final_timeline": "final_timeline",
+}
+
+
+def _context(db: Session, s: ScheduledEmail, e: Enquiry) -> dict[str, Any]:
+    if s.kind == "trial_reminder" and s.ref_id:
+        t = db.get(Trial, s.ref_id)
+        if t is not None:
+            local = t.starts_at.astimezone(ZoneInfo(e.timezone or DEFAULT_TZ))
+            when = f"{local:%A, %B} {local.day} at {local:%-I:%M %p}"
+            return {"trial_date": when, "trial_location": t.location or ""}
+    return {}
 
 
 # --- Dispatcher ------------------------------------------------------------
@@ -156,11 +244,18 @@ def dispatch_due(db: Session, now: datetime | None = None, limit: int = 50) -> l
             s.note = reason
             results.append("skipped")
             continue
+        payload: dict[str, Any] = {"enquiry_id": str(s.enquiry_id), "template": s.template_key}
+        kind = "email.send"
+        if s.kind in DOCUMENT_KINDS:
+            kind = "booking.document_email"
+            payload["doc"] = DOCUMENT_KINDS[s.kind]
+        elif e is not None:
+            payload["context"] = _context(db, s, e)
         s.outbox_event_id = outbox.enqueue(
             db,
-            "email.send",
+            kind,
             f"scheduled:{s.id}",
-            {"enquiry_id": str(s.enquiry_id), "template": s.template_key},
+            payload,
             aggregate_type="scheduled_email",
             aggregate_id=s.id,
         )
