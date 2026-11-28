@@ -10,6 +10,7 @@ from app.modules.bookings.models import Booking, BookingStatus
 from app.modules.documents.models import Contract, ContractStatus, Invoice, InvoiceStatus
 from app.modules.enquiries.models import Enquiry, Pipeline
 from app.modules.enquiries.pipeline import transition
+from app.modules.google.events import calendar_changed
 from app.modules.platform.audit import Actor, write_audit
 from app.modules.platform.models import OutboxEvent, OutboxStatus
 from app.modules.scheduling import service as scheduling
@@ -53,6 +54,7 @@ def cancel_wedding(db: Session, e: Enquiry, reason: str, actor: Actor) -> dict[s
             c.status = ContractStatus.VOID
 
     scheduled = scheduling.cancel(db, e.id, reason="wedding cancelled")
+    calendar_changed(db, e.id)
     # Emails already queued but not yet sent are stopped too.
     stopped = 0
     for ev in db.scalars(

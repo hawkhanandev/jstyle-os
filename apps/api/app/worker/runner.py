@@ -14,6 +14,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.core.db import utcnow
 from app.modules.email.send import Skip
+from app.modules.google import service as google
 from app.modules.platform import outbox
 from app.modules.platform.audit import SYSTEM, write_audit
 from app.modules.platform.models import OutboxEvent, OutboxStatus
@@ -69,6 +70,8 @@ def tick(factory: sessionmaker[Session], deps: Deps, batch: int = 10) -> int:
             scheduling.daily_checks(db, today)
             _last_daily[:] = [today]
         db.commit()
+    if deps.google is not None:
+        google.maybe_sync(factory, deps.google, deps.settings)
     with factory() as db:
         ids = [e.id for e in outbox.claim_due(db, limit=batch)]
         db.commit()

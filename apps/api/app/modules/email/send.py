@@ -158,6 +158,8 @@ def send_rendered(
         )
         db.add(thread)
         db.flush()
+    elif thread.provider_thread_id is None and result.provider_thread_id:
+        thread.provider_thread_id = result.provider_thread_id
     thread.last_message_at = now
     msg = EmailMessage(
         thread_id=thread.id,
