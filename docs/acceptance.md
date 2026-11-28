@@ -30,3 +30,8 @@
 | A booking runs from BOOKED to completed with every email at the right local time | `test_booking_schedules_every_wedding_email`, `test_last_minute_booking_sends_prep_guide_now`, `test_trial_reminder_two_days_before` | Done |
 | The final timeline is only sent once the balance is paid in full | `test_final_timeline_waits_for_full_payment` | Done |
 | Moving the wedding date moves every scheduled email | `test_booking_schedules_every_wedding_email` | Done |
+| API docs and dev-only endpoints are off outside local | `JSTYLE_ENV` checks in `app/main.py` and the `/dev/...` routes | Done |
+| Security headers on API and web | `app/main.py` middleware, `apps/web/next.config.ts` (CSP in production) | Done |
+| Dependencies have no known vulnerabilities | `npm audit`, `pip-audit` | Done (Phase 8) |
+| Backups can be restored | `scripts/backup-local.sh`, `scripts/restore-local.sh`, [runbook](runbooks/backup-restore.md) | Done (local) |
+| Jessica signs off the full walk-through | [docs/uat.md](uat.md) | Waiting on Jessica |

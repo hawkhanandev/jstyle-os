@@ -2,7 +2,7 @@ import { AccountBar } from "@/components/AccountBar";
 import { Sidebar } from "@/components/Sidebar";
 
 // Highest phase whose screens are live. Bumped as phases land.
-const CURRENT_PHASE = 7;
+const CURRENT_PHASE = 8;
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (

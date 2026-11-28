@@ -13,6 +13,7 @@ import { ContractTab } from "@/components/paperwork/ContractTab";
 import { InvoicesTab } from "@/components/paperwork/InvoicesTab";
 import { PaymentsTab } from "@/components/payments/PaymentsTab";
 import { ScheduledList } from "@/components/ScheduledList";
+import { DocumentsList } from "@/components/DocumentsList";
 import { WeddingOpsTab } from "@/components/operations/WeddingOpsTab";
 
 type Line = { kind: string; description: string; quantity: number; unit_cents: number; amount_cents: number };
@@ -275,10 +276,11 @@ export default function EnquiryPage() {
       {tab === "Invoices" && <InvoicesTab enquiryId={e.id} />}
       {tab === "Payments" && <PaymentsTab enquiryId={e.id} onChange={load} />}
       {tab === "Wedding ops" && <WeddingOpsTab enquiryId={e.id} />}
+      {tab === "Documents" && <DocumentsList enquiryId={e.id} />}
 
       {tab === "Quotes" && <QuotesTab enquiryId={e.id} region={e.region} onChange={load} />}
 
-      {!["Overview", "Email", "Quotes", "Contract", "Invoices", "Payments", "Wedding ops", "Activity"].includes(tab) && (
+      {!["Overview", "Email", "Quotes", "Contract", "Invoices", "Payments", "Wedding ops", "Documents", "Activity"].includes(tab) && (
         <div className="mt-6 rounded-lg border border-dashed border-stone-300 bg-white p-8 text-stone-500">
           {tab} arrives in a later phase.
         </div>

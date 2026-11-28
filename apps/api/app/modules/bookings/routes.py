@@ -8,7 +8,8 @@ from pydantic import BaseModel, Field
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from app.core.db import get_session
+from app.core.config import Settings, get_settings
+from app.core.db import get_session, utcnow
 from app.modules.auth.deps import Account
 from app.modules.bookings import cancel, service
 from app.modules.enquiries.models import Enquiry
@@ -93,3 +94,18 @@ def scheduled_emails(enquiry_id: uuid.UUID, account: Account, db: DB) -> list[di
         .order_by(ScheduledEmail.send_at.desc())
     )
     return [scheduling.to_dict(s) for s in rows]
+
+
+@router.post("/dev/scheduled-emails/{sid}/send-now")
+def send_now(
+    sid: uuid.UUID, account: Account, db: DB, settings: Annotated[Settings, Depends(get_settings)]
+) -> dict[str, Any]:
+    """Local testing only: make a scheduled email due now (the worker picks it up)."""
+    if settings.env != "local":
+        raise HTTPException(404)
+    s = db.get(ScheduledEmail, sid)
+    if s is None or s.status != "scheduled":
+        raise HTTPException(404, detail={"code": "not_found", "message": "Nothing scheduled."})
+    s.send_at = utcnow()
+    db.commit()
+    return scheduling.to_dict(s)
