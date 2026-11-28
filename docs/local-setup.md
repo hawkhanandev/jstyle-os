@@ -90,6 +90,9 @@ Create the test database once with
 - **"port is already allocated" or "address already in use"**: another program is using one of
   the ports above. Pick a different one in `.env` (see Ports), or stop an old run with
   `docker compose down`.
+- **`npm error code ETIMEDOUT` (or another network error) during the build**: the connection
+  dropped while downloading packages. Run `docker compose up --build` again; packages already
+  downloaded are cached, so each re-run picks up where the last one stopped.
 - **Sign-in loops back to the sign-in page**: clear cookies for localhost and try again.
 - **"Internal Server Error" on a `/api/...` page, or "The CRM server isn't responding"**: the API container
   is not running. Run `docker compose logs api` to see why, then `docker compose up --build` again.
