@@ -31,7 +31,7 @@ const ACTIONS: [string, string, string][] = [
   ["awaiting_signed_contract", "Waiting on contract or deposit", "/contracts"],
   ["payments_to_verify", "Payments to verify", "/payments"],
   ["held_submissions", "Held form submissions", "/forms"],
-  ["failed_automations", "Failed automations", "/settings"],
+  ["failed_automations", "Failed automations", "/settings#activity"],
 ];
 
 const ISLAND: Record<"HI" | "OR", string> = { HI: "Hawaii time", OR: "Pacific time" };
@@ -45,21 +45,21 @@ function RegionCard({ code, r }: { code: "HI" | "OR"; r: Region }) {
   ];
   return (
     <section className="soft-card overflow-hidden rounded-2xl border border-stone-200">
-      <div className="ink-gradient px-6 py-5 text-white">
+      <div className="ink-gradient px-6 py-5 text-snow">
         <div className="flex items-baseline justify-between">
           <h2 className="font-serif text-3xl">{REGION_NAMES[code]}</h2>
-          <Link href={`/enquiries?region=${code}`} className="text-xs uppercase tracking-[0.2em] text-white/60 hover:text-white">
+          <Link href={`/enquiries?region=${code}`} className="text-xs uppercase tracking-[0.2em] text-snow/60 hover:text-snow">
             View enquiries
           </Link>
         </div>
-        <div className="text-xs uppercase tracking-[0.2em] text-white/40">{ISLAND[code]}</div>
+        <div className="text-xs uppercase tracking-[0.2em] text-snow/40">{ISLAND[code]}</div>
         <div className="mt-5 grid grid-cols-2 gap-6">
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-white/50">Booked, upcoming</div>
+            <div className="text-[11px] uppercase tracking-wider text-snow/50">Booked, upcoming</div>
             <div className="mt-1 text-2xl font-light">{fmt(r.booked_value_cents)}</div>
           </div>
           <div>
-            <div className="text-[11px] uppercase tracking-wider text-white/50">Still owed</div>
+            <div className="text-[11px] uppercase tracking-wider text-snow/50">Still owed</div>
             <div className="mt-1 text-2xl font-light">{fmt(r.outstanding_cents)}</div>
           </div>
         </div>

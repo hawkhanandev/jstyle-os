@@ -11,67 +11,174 @@
 @theme {
   --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
 
-  --color-stone-50: #fafaf9;
-  --color-stone-100: #f3f3f2;
-  --color-stone-200: #e7e7e5;
-  --color-stone-300: #d4d4d2;
-  --color-stone-400: #a8a8a5;
-  --color-stone-500: #77777a;
-  --color-stone-600: #57575a;
-  --color-stone-700: #3d3d40;
-  --color-stone-800: #26262a;
-  --color-stone-900: #161618;
+  /* Fixed colours for the always-dark panels (sidebar, dashboard headers). */
+  --color-snow: #ffffff;
+  --color-ink: #161618;
 
-  --color-rose-50: #f2f2f1;
-  --color-rose-100: #e8e8e6;
-  --color-rose-300: #c4c4c2;
-  --color-rose-400: #9a9a98;
-  --color-rose-700: #2b2b2e;
-  --color-rose-800: #1d1d20;
-  --color-rose-900: #111113;
+  /* Theme-aware colours: values live in :root and .dark below. */
+  --color-white: var(--c-white);
+  --color-stone-50: var(--c-stone-50);
+  --color-stone-100: var(--c-stone-100);
+  --color-stone-200: var(--c-stone-200);
+  --color-stone-300: var(--c-stone-300);
+  --color-stone-400: var(--c-stone-400);
+  --color-stone-500: var(--c-stone-500);
+  --color-stone-600: var(--c-stone-600);
+  --color-stone-700: var(--c-stone-700);
+  --color-stone-800: var(--c-stone-800);
+  --color-stone-900: var(--c-stone-900);
+  --color-rose-50: var(--c-rose-50);
+  --color-rose-100: var(--c-rose-100);
+  --color-rose-300: var(--c-rose-300);
+  --color-rose-400: var(--c-rose-400);
+  --color-rose-700: var(--c-rose-700);
+  --color-rose-800: var(--c-rose-800);
+  --color-rose-900: var(--c-rose-900);
+  --color-amber-50: var(--c-amber-50);
+  --color-amber-100: var(--c-amber-100);
+  --color-amber-200: var(--c-amber-200);
+  --color-amber-300: var(--c-amber-300);
+  --color-amber-400: var(--c-amber-400);
+  --color-amber-700: var(--c-amber-700);
+  --color-amber-800: var(--c-amber-800);
+  --color-amber-900: var(--c-amber-900);
+  --color-emerald-50: var(--c-emerald-50);
+  --color-emerald-100: var(--c-emerald-100);
+  --color-emerald-300: var(--c-emerald-300);
+  --color-emerald-700: var(--c-emerald-700);
+  --color-emerald-800: var(--c-emerald-800);
+  --color-emerald-900: var(--c-emerald-900);
+  --color-sky-50: var(--c-sky-50);
+  --color-sky-800: var(--c-sky-800);
+  --color-sky-900: var(--c-sky-900);
+  --color-violet-50: var(--c-violet-50);
+  --color-violet-700: var(--c-violet-700);
+  --color-violet-800: var(--c-violet-800);
+}
 
-  --color-amber-50: #f8f6f1;
-  --color-amber-100: #f1ede3;
-  --color-amber-200: #e6e0d1;
-  --color-amber-300: #d6cdb8;
-  --color-amber-400: #b9ad92;
-  --color-amber-700: #5e5543;
-  --color-amber-800: #4a4335;
-  --color-amber-900: #35302a;
+:root {
+  color-scheme: light;
+  --c-white: #ffffff;
+  --page: #fafaf9;
+  --text: #161618;
+  --card-top: #ffffff;
+  --card-bottom: #fbfbfa;
+  --ink-a: #0d0d0f;
+  --ink-b: #1e1e22;
+  --ink-c: #33333a;
+  --c-stone-50: #fafaf9;
+  --c-stone-100: #f3f3f2;
+  --c-stone-200: #e7e7e5;
+  --c-stone-300: #d4d4d2;
+  --c-stone-400: #a8a8a5;
+  --c-stone-500: #77777a;
+  --c-stone-600: #57575a;
+  --c-stone-700: #3d3d40;
+  --c-stone-800: #26262a;
+  --c-stone-900: #161618;
+  --c-rose-50: #f2f2f1;
+  --c-rose-100: #e8e8e6;
+  --c-rose-300: #c4c4c2;
+  --c-rose-400: #9a9a98;
+  --c-rose-700: #2b2b2e;
+  --c-rose-800: #1d1d20;
+  --c-rose-900: #111113;
+  --c-amber-50: #f8f6f1;
+  --c-amber-100: #f1ede3;
+  --c-amber-200: #e6e0d1;
+  --c-amber-300: #d6cdb8;
+  --c-amber-400: #b9ad92;
+  --c-amber-700: #5e5543;
+  --c-amber-800: #4a4335;
+  --c-amber-900: #35302a;
+  --c-emerald-50: #f2f5f3;
+  --c-emerald-100: #e5ebe7;
+  --c-emerald-300: #bfcac2;
+  --c-emerald-700: #3d4a41;
+  --c-emerald-800: #2f3a33;
+  --c-emerald-900: #222a25;
+  --c-sky-50: #f2f4f6;
+  --c-sky-800: #333a42;
+  --c-sky-900: #252b31;
+  --c-violet-50: #f4f3f6;
+  --c-violet-700: #474253;
+  --c-violet-800: #36323f;
+}
 
-  --color-emerald-50: #f2f5f3;
-  --color-emerald-100: #e5ebe7;
-  --color-emerald-300: #bfcac2;
-  --color-emerald-700: #3d4a41;
-  --color-emerald-800: #2f3a33;
-  --color-emerald-900: #222a25;
-
-  --color-sky-50: #f2f4f6;
-  --color-sky-800: #333a42;
-  --color-sky-900: #252b31;
-
-  --color-violet-50: #f4f3f6;
-  --color-violet-700: #474253;
-  --color-violet-800: #36323f;
+html.dark {
+  color-scheme: dark;
+  --c-white: #151517;
+  --page: #0f0f11;
+  --text: #f4f4f5;
+  --card-top: #18181b;
+  --card-bottom: #151517;
+  --ink-a: #1b1b1f;
+  --ink-b: #232328;
+  --ink-c: #303037;
+  --c-stone-50: #0f0f11;
+  --c-stone-100: #18181b;
+  --c-stone-200: #26262a;
+  --c-stone-300: #36363b;
+  --c-stone-400: #55555b;
+  --c-stone-500: #8a8a90;
+  --c-stone-600: #a8a8ad;
+  --c-stone-700: #c8c8cc;
+  --c-stone-800: #e2e2e4;
+  --c-stone-900: #f4f4f5;
+  --c-rose-50: #1c1c1f;
+  --c-rose-100: #232327;
+  --c-rose-300: #44444a;
+  --c-rose-400: #6a6a70;
+  --c-rose-700: #d8d8db;
+  --c-rose-800: #e9e9eb;
+  --c-rose-900: #f5f5f6;
+  --c-amber-50: #1d1b16;
+  --c-amber-100: #25221b;
+  --c-amber-200: #2f2b22;
+  --c-amber-300: #3f3a2e;
+  --c-amber-400: #6a624f;
+  --c-amber-700: #c9bfa8;
+  --c-amber-800: #ddd4bf;
+  --c-amber-900: #ece6d6;
+  --c-emerald-50: #161b18;
+  --c-emerald-100: #1c231f;
+  --c-emerald-300: #34403a;
+  --c-emerald-700: #b5c4ba;
+  --c-emerald-800: #cbd8cf;
+  --c-emerald-900: #dfe9e2;
+  --c-sky-50: #16191c;
+  --c-sky-800: #c3cad2;
+  --c-sky-900: #dbe1e7;
+  --c-violet-50: #1a1920;
+  --c-violet-700: #c3bdd0;
+  --c-violet-800: #d6d1e1;
 }
 
 body {
-  background: #fafaf9;
-  color: #161618;
+  background: var(--page);
+  color: var(--text);
   -webkit-font-smoothing: antialiased;
 }
 
 /* Black-to-graphite panel used by the sidebar and dashboard headers. */
 .ink-gradient {
-  background: linear-gradient(160deg, #0d0d0f 0%, #1e1e22 55%, #33333a 100%);
+  background: linear-gradient(160deg, var(--ink-a) 0%, var(--ink-b) 55%, var(--ink-c) 100%);
 }
 
 .soft-card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfbfa 100%);
+  background: linear-gradient(180deg, var(--card-top) 0%, var(--card-bottom) 100%);
   box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.08);
 }
 
 input[type="checkbox"],
 input[type="radio"] {
-  accent-color: #161618;
+  accent-color: var(--c-stone-900);
+}
+
+html.dark .soft-card {
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.3), 0 8px 24px -12px rgb(0 0 0 / 0.6);
+}
+
+html.dark .ink-gradient {
+  border-right: 1px solid #26262a;
 }
