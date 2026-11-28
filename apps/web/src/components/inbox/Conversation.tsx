@@ -120,7 +120,7 @@ function Bubble({ m }: { m: Message }) {
               title={m.subject}
               sandbox=""
               srcDoc={`<base target="_blank"><style>body{font-family:system-ui,sans-serif;font-size:14px;color:#292524;margin:0 16px 12px}</style>${m.body_html}`}
-              className="h-64 w-full"
+              className="h-64 w-full rounded bg-snow"
             />
           ) : (
             <p className="whitespace-pre-wrap px-4 pb-3 text-sm text-stone-800">{m.body_text}</p>

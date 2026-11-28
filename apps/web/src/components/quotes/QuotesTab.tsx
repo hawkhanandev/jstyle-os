@@ -341,7 +341,7 @@ export function EmailFrame({ quoteId, stamp }: { quoteId: string; stamp?: string
         {preview.subject}
         {preview.frozen === "true" && <span className="ml-2 text-xs text-stone-500">(exactly as approved)</span>}
       </div>
-      <iframe title="Email preview" sandbox="" srcDoc={preview.html} className="h-[28rem] w-full bg-white" />
+      <iframe title="Email preview" sandbox="" srcDoc={preview.html} className="h-[28rem] w-full rounded bg-snow" />
     </div>
   );
 }

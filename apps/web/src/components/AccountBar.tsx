@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { api, type Me } from "@/lib/api";
+import { ThemeToggle } from "@/components/ThemeToggle";
 
 export function AccountBar() {
   const [me, setMe] = useState<Me | null>(null);
@@ -20,6 +21,7 @@ export function AccountBar() {
 
   return (
     <header className="flex items-center justify-end gap-4 border-b border-stone-200 bg-white/80 px-6 py-3 backdrop-blur text-sm">
+      <ThemeToggle />
       {me && (
         <span className="text-stone-500">
           Business account · {me.device_label ?? "this device"}

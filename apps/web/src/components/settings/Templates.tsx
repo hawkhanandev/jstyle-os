@@ -102,7 +102,7 @@ export function Templates() {
               <div className="text-stone-600">Preview with sample data</div>
               <div className="mt-1 rounded-md border border-stone-200">
                 <div className="border-b border-stone-100 px-3 py-2 font-medium">{preview?.subject}</div>
-                <iframe sandbox="" srcDoc={preview?.html ?? ""} className="h-96 w-full" title="Email preview" />
+                <iframe sandbox="" srcDoc={preview?.html ?? ""} className="h-96 w-full rounded bg-snow" title="Email preview" />
               </div>
             </div>
           </div>
