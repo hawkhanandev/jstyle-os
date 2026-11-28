@@ -13,13 +13,14 @@ from sqlalchemy.orm import Session
 from app.core.config import Settings, get_settings
 from app.core.db import get_session
 from app.modules.auth.deps import Account, client_ip
-from app.modules.forms import service, spam
+from app.modules.forms import layout, service, spam
 from app.modules.forms.models import FormSubmission, SubmissionStatus
 from app.modules.forms.schemas import BrideForm, PlannerForm
 from app.modules.forms.verifiers import MailCheck, Turnstile, get_mail_check, get_turnstile
 
 public = APIRouter(prefix="/public", tags=["public forms"])
 staff = APIRouter(prefix="/form-submissions", tags=["forms"])
+layouts = APIRouter(prefix="/form-layouts", tags=["forms"])
 
 DB = Annotated[Session, Depends(get_session)]
 Cfg = Annotated[Settings, Depends(get_settings)]
@@ -33,12 +34,31 @@ MESSAGES = {
 
 
 @public.get("/forms/config")
-def form_config(settings: Cfg) -> dict[str, str]:
-    """Called when the form loads: a signed start time and the Turnstile site key."""
-    return {
+def form_config(settings: Cfg, db: DB, kind: layout.Kind | None = None) -> dict[str, Any]:
+    """Called when the form loads: a signed start time, the Turnstile key and the form layout."""
+    out: dict[str, Any] = {
         "form_token": spam.issue_form_token(settings.secret_key),
         "turnstile_site_key": settings.turnstile_site_key,
     }
+    if kind:
+        out["layout"] = layout.public_view(kind, layout.get_layout(db, kind))
+    return out
+
+
+def _apply_layout(
+    db: Session, kind: layout.Kind, form: BrideForm | PlannerForm
+) -> JSONResponse | None:
+    """Check required fields from the editable layout; attach custom answers to the form."""
+    values = form.model_dump(exclude={"custom", "custom_answers"})
+    try:
+        form.custom_answers = layout.check_answers(
+            kind, layout.get_layout(db, kind), values, form.custom
+        )
+    except layout.MissingAnswers as exc:
+        return JSONResponse(
+            {"ok": False, "message": f"Please fill in: {', '.join(exc.labels)}."}, status_code=422
+        )
+    return None
 
 
 def _respond(outcome: service.Outcome) -> JSONResponse:
@@ -54,6 +74,8 @@ def _respond(outcome: service.Outcome) -> JSONResponse:
 def submit_bride(
     form: BrideForm, request: Request, db: DB, settings: Cfg, turnstile: TS, mail: MX
 ) -> JSONResponse:
+    if (bad := _apply_layout(db, "bride", form)) is not None:
+        return bad
     return _respond(
         service.submit(
             db,
@@ -72,6 +94,8 @@ def submit_bride(
 def submit_planner(
     form: PlannerForm, request: Request, db: DB, settings: Cfg, turnstile: TS, mail: MX
 ) -> JSONResponse:
+    if (bad := _apply_layout(db, "planner", form)) is not None:
+        return bad
     return _respond(
         service.submit(
             db,
@@ -140,3 +164,27 @@ def delete(sub_id: uuid.UUID, account: Account, db: DB) -> SubmissionOut:
     sub = service.delete(db, _held(db, sub_id), account.actor)
     db.commit()
     return SubmissionOut.model_validate(sub)
+
+
+@layouts.get("/{kind}")
+def get_form_layout(kind: layout.Kind, account: Account, db: DB) -> dict[str, Any]:
+    return layout.editor_view(kind, layout.get_layout(db, kind))
+
+
+@layouts.put("/{kind}")
+def put_form_layout(
+    kind: layout.Kind, body: layout.FormLayout, account: Account, db: DB
+) -> dict[str, Any]:
+    try:
+        saved = layout.save_layout(db, kind, body, account.actor)
+    except ValueError as exc:
+        raise HTTPException(422, detail={"code": "invalid", "message": str(exc)}) from exc
+    db.commit()
+    return layout.editor_view(kind, saved)
+
+
+@layouts.post("/{kind}/reset")
+def reset_form_layout(kind: layout.Kind, account: Account, db: DB) -> dict[str, Any]:
+    saved = layout.save_layout(db, kind, layout.default_layout(kind), account.actor)
+    db.commit()
+    return layout.editor_view(kind, saved)

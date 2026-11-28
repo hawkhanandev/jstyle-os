@@ -1,5 +1,77 @@
 @import "tailwindcss";
 
+/*
+ * Soft monochrome palette. Components keep their Tailwind class names; the palettes they use
+ * are remapped here so the whole app moves to white, off-white and shades of black at once.
+ *   stone   -> warm-neutral greys (surfaces, borders, body text)
+ *   rose    -> the accent, now ink black
+ *   amber / emerald / sky / violet -> status colours, kept only as faint tints so warnings
+ *   and confirmations still read differently without breaking the monochrome look.
+ */
 @theme {
   --font-serif: "Cormorant Garamond", Georgia, "Times New Roman", serif;
+
+  --color-stone-50: #fafaf9;
+  --color-stone-100: #f3f3f2;
+  --color-stone-200: #e7e7e5;
+  --color-stone-300: #d4d4d2;
+  --color-stone-400: #a8a8a5;
+  --color-stone-500: #77777a;
+  --color-stone-600: #57575a;
+  --color-stone-700: #3d3d40;
+  --color-stone-800: #26262a;
+  --color-stone-900: #161618;
+
+  --color-rose-50: #f2f2f1;
+  --color-rose-100: #e8e8e6;
+  --color-rose-300: #c4c4c2;
+  --color-rose-400: #9a9a98;
+  --color-rose-700: #2b2b2e;
+  --color-rose-800: #1d1d20;
+  --color-rose-900: #111113;
+
+  --color-amber-50: #f8f6f1;
+  --color-amber-100: #f1ede3;
+  --color-amber-200: #e6e0d1;
+  --color-amber-300: #d6cdb8;
+  --color-amber-400: #b9ad92;
+  --color-amber-700: #5e5543;
+  --color-amber-800: #4a4335;
+  --color-amber-900: #35302a;
+
+  --color-emerald-50: #f2f5f3;
+  --color-emerald-100: #e5ebe7;
+  --color-emerald-300: #bfcac2;
+  --color-emerald-700: #3d4a41;
+  --color-emerald-800: #2f3a33;
+  --color-emerald-900: #222a25;
+
+  --color-sky-50: #f2f4f6;
+  --color-sky-800: #333a42;
+  --color-sky-900: #252b31;
+
+  --color-violet-50: #f4f3f6;
+  --color-violet-700: #474253;
+  --color-violet-800: #36323f;
+}
+
+body {
+  background: #fafaf9;
+  color: #161618;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Black-to-graphite panel used by the sidebar and dashboard headers. */
+.ink-gradient {
+  background: linear-gradient(160deg, #0d0d0f 0%, #1e1e22 55%, #33333a 100%);
+}
+
+.soft-card {
+  background: linear-gradient(180deg, #ffffff 0%, #fbfbfa 100%);
+  box-shadow: 0 1px 2px rgb(0 0 0 / 0.04), 0 8px 24px -12px rgb(0 0 0 / 0.08);
+}
+
+input[type="checkbox"],
+input[type="radio"] {
+  accent-color: #161618;
 }

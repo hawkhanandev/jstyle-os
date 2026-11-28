@@ -23,6 +23,16 @@ class _Common(BaseModel):
     venue_name: str | None = Field(default=None, max_length=300)
     venue_address: str | None = Field(default=None, max_length=500)
     notes: str | None = Text
+    # Answers to custom questions, by question id, as sent by the form.
+    custom: dict[str, str | int | bool | None] = Field(default_factory=dict, max_length=20)
+    # Filled in by the server from the form layout: [{"label": ..., "value": ...}].
+    custom_answers: list[dict[str, str]] = Field(default_factory=list, max_length=20)
+
+    def notes_with_answers(self) -> str | None:
+        if not self.custom_answers:
+            return self.notes
+        lines = [f"{a['label']}: {a['value']}" for a in self.custom_answers]
+        return "\n".join([*([self.notes] if self.notes else []), *lines])
 
 
 class BrideForm(_Common):
@@ -53,7 +63,7 @@ class BrideForm(_Common):
             attendant_makeup_count=self.attendants_makeup,
             trial_requested=self.trial,
             travel_notes=self.travel_notes,
-            notes=self.notes,
+            notes=self.notes_with_answers(),
             raw=self.model_dump(mode="json", exclude=SPAM_FIELDS),
         )
 
@@ -77,7 +87,7 @@ class PlannerForm(_Common):
             region=self.region or None,
             venue_name=self.venue_name,
             venue_address=self.venue_address,
-            notes=self.notes,
+            notes=self.notes_with_answers(),
             planner_company=self.company_name,
             planner_contact_name=self.contact_name,
             services={
@@ -89,4 +99,4 @@ class PlannerForm(_Common):
         )
 
 
-SPAM_FIELDS = {"form_token", "turnstile_token", "website"}
+SPAM_FIELDS = {"form_token", "turnstile_token", "website", "custom"}

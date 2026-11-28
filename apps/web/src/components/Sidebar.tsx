@@ -7,15 +7,15 @@ import { NAV } from "@/lib/nav";
 export function Sidebar({ current }: { current: number }) {
   const path = usePathname();
   return (
-    <aside className="w-60 shrink-0 border-r border-stone-200 bg-white px-3 py-5">
-      <div className="px-3 pb-6">
-        <div className="font-serif text-xl text-stone-900">Jstyle</div>
-        <div className="text-xs uppercase tracking-widest text-stone-500">Business OS</div>
+    <aside className="ink-gradient sticky top-0 flex h-screen w-60 shrink-0 flex-col px-3 py-6 text-white">
+      <div className="px-3 pb-8">
+        <div className="font-serif text-2xl tracking-wide">Jstyle</div>
+        <div className="text-[10px] uppercase tracking-[0.3em] text-white/50">Business OS</div>
       </div>
-      <nav className="space-y-6">
+      <nav className="flex-1 space-y-6 overflow-y-auto">
         {NAV.map((group) => (
           <div key={group.section}>
-            <div className="px-3 pb-1 text-xs font-medium uppercase tracking-wide text-stone-400">{group.section}</div>
+            <div className="px-3 pb-1.5 text-[10px] font-medium uppercase tracking-[0.2em] text-white/40">{group.section}</div>
             {group.items.map((item) => {
               const active = item.href === "/" ? path === "/" : path.startsWith(item.href);
               const ready = item.phase <= current;
@@ -23,18 +23,19 @@ export function Sidebar({ current }: { current: number }) {
                 <Link
                   key={item.href}
                   href={item.href}
-                  className={`flex items-center justify-between rounded-md px-3 py-1.5 text-sm ${
-                    active ? "bg-rose-50 font-medium text-rose-900" : "text-stone-700 hover:bg-stone-100"
+                  className={`flex items-center justify-between rounded-md px-3 py-1.5 text-sm transition-colors ${
+                    active ? "bg-white text-stone-900 shadow-sm" : "text-white/75 hover:bg-white/10 hover:text-white"
                   }`}
                 >
                   <span>{item.label}</span>
-                  {!ready && <span className="text-[10px] text-stone-400">P{item.phase}</span>}
+                  {!ready && <span className="text-[10px] text-white/40">P{item.phase}</span>}
                 </Link>
               );
             })}
           </div>
         ))}
       </nav>
+      <div className="px-3 pt-4 text-[10px] uppercase tracking-[0.2em] text-white/30">Hawaii · Oregon</div>
     </aside>
   );
 }

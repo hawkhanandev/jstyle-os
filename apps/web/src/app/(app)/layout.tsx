@@ -10,7 +10,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar current={CURRENT_PHASE} />
       <div className="flex min-w-0 flex-1 flex-col">
         <AccountBar />
-        <main className="flex-1 px-8 py-6">{children}</main>
+        <main className="mx-auto w-full max-w-7xl flex-1 px-8 py-8">{children}</main>
       </div>
     </div>
   );
