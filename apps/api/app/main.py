@@ -1,8 +1,10 @@
+from collections.abc import Awaitable, Callable
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, FastAPI, Response
+from fastapi import APIRouter, Depends, FastAPI, Request, Response
 from sqlalchemy import text
 from sqlalchemy.orm import Session
+from starlette.responses import Response as StarletteResponse
 
 from app.core.config import get_settings
 from app.core.db import get_session
@@ -21,12 +23,29 @@ from app.modules.pricing.routes import router as pricing_router
 from app.modules.quotes.routes import router as quotes_router
 from app.modules.replies.routes import router as replies_router
 
+_local = get_settings().env == "local"
 app = FastAPI(
     title="Jstyle Business OS",
     version="0.1.0",
-    openapi_url="/api/openapi.json",
-    docs_url="/api/docs",
+    # API docs only on a developer's machine.
+    openapi_url="/api/openapi.json" if _local else None,
+    docs_url="/api/docs" if _local else None,
+    redoc_url=None,
 )
+
+
+@app.middleware("http")
+async def security_headers(
+    request: Request, call_next: Callable[[Request], Awaitable[StarletteResponse]]
+) -> StarletteResponse:
+    response = await call_next(request)
+    response.headers.setdefault("X-Content-Type-Options", "nosniff")
+    response.headers.setdefault("Referrer-Policy", "same-origin")
+    # Client data must never sit in a shared or browser cache.
+    response.headers.setdefault("Cache-Control", "no-store")
+    return response
+
+
 api = APIRouter(prefix="/api")
 
 

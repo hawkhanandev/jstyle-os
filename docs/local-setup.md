@@ -102,3 +102,14 @@ Gmail isn't connected locally, so client replies can't arrive by email. Open an 
 **Email** tab and use **Local testing: pretend the client replied**. The reply goes through the same
 matching code the Gmail sync will use, then shows up in the **Inbox** as unread. Replies you send
 from the Inbox land in Mailpit.
+
+## Testing scheduled emails without waiting
+
+Scheduled emails (follow-ups, preparation guide, reminders) list on each enquiry. Locally, each one
+has a **Send now (test)** button that sends it on the worker's next run instead of on its date.
+
+## Backups and the walk-through
+
+- Back up and restore with `scripts/backup-local.sh` and `scripts/restore-local.sh`; see
+  [runbooks/backup-restore.md](runbooks/backup-restore.md).
+- The full journey to test before going live is in [uat.md](uat.md).

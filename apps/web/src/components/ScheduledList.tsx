@@ -16,9 +16,21 @@ const LABEL: Record<string, string> = {
 
 export function ScheduledList({ enquiryId, stamp }: { enquiryId: string; stamp?: string }) {
   const [rows, setRows] = useState<Scheduled[]>([]);
+  const [local, setLocal] = useState(false);
+  const [tick, setTick] = useState(0);
   useEffect(() => {
     api<Scheduled[]>(`/enquiries/${enquiryId}/scheduled-emails`).then(setRows).catch(() => setRows([]));
-  }, [enquiryId, stamp]);
+  }, [enquiryId, stamp, tick]);
+  useEffect(() => {
+    fetch("/api/auth/config")
+      .then((r) => r.json())
+      .then((c) => setLocal(Boolean(c.dev_login)))
+      .catch(() => undefined);
+  }, []);
+  async function sendNow(id: string) {
+    await api(`/dev/scheduled-emails/${id}/send-now`, { method: "POST" });
+    setTimeout(() => setTick((t) => t + 1), 3000);
+  }
   if (rows.length === 0) return null;
   return (
     <section className="mt-6">
@@ -29,6 +41,11 @@ export function ScheduledList({ enquiryId, stamp }: { enquiryId: string; stamp?:
             <b>{LABEL[r.kind] ?? r.kind}</b> · {new Date(r.send_at).toLocaleString()} ·{" "}
             <span className={r.status === "scheduled" ? "text-sky-800" : "text-stone-500"}>{r.status}</span>
             {r.note && <span className="text-stone-500"> ({r.note})</span>}
+            {local && r.status === "scheduled" && (
+              <button onClick={() => sendNow(r.id)} className="ml-2 text-amber-800 hover:underline" title="Local testing only">
+                Send now (test)
+              </button>
+            )}
           </li>
         ))}
       </ul>
